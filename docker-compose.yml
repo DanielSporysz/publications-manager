@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+  nginx:
+    image: chaberb/nginx-ssl
+    depends_on:
+      - web
+      - cdn
+    ports:
+      - "443:443"
+    volumes:
+      - ./nginx-uwsgi.conf:/etc/nginx/nginx.conf
+
+
+  web:
+    image: flask_web
+    depends_on:
+    - db
+    ports:
+    - "5000:5000"
+    volumes:
+    - ./flask_web/app:/var/www/app
+    environment:
+      FLASK_ENV: development
+
+  cdn:
+    image: flask_pdf
+    depends_on:
+    - db
+    ports:
+    - "5001:5000"
+    volumes:
+    - ./flask_pdf/app:/var/pdf/app
+    environment:
+      FLASK_ENV: development
+
+  db:
+    image: redis
