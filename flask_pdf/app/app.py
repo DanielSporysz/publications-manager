@@ -14,14 +14,14 @@ JWT_SECRET = getenv('JWT_SECRET')
 def download(fid):
   token = request.headers.get('token') or request.args.get('token')
   if len(fid) == 0:
-    return '<h1>CDN</h1> Missing fid', 404
+    return '<h1>PDF</h1> Missing fid', 404
   if token is None:
-    return '<h1>CDN</h1> No token', 401
+    return '<h1>PDF</h1> No token', 401
   if not valid(token):
-    return '<h1>CDN</h1> Invalid token', 401
+    return '<h1>PDF</h1> Invalid token', 401
   payload = decode(token, JWT_SECRET)
   if payload.get('fid', fid) != fid:
-    return '<h1>CDN</h1> Incorrect token payload', 401
+    return '<h1>PDF</h1> Incorrect token payload', 401
 
   content_type = request.headers.get('Accept') or request.args.get('content_type')
   with open('/tmp/' + fid, 'rb') as f:
@@ -37,20 +37,20 @@ def upload():
   c = request.form.get('callback')
   if f is None:
     return redirect(f"{c}?error=No+file+provided") if c \
-    else ('<h1>CDN</h1> No file provided', 400)
+    else ('<h1>PDF</h1> No file provided', 400)
   if t is None:
     return redirect(f"{c}?error=No+token+provided") if c \
-    else ('<h1>CDN</h1> No token provided', 401)
+    else ('<h1>PDF</h1> No token provided', 401)
   if not valid(t):
     return redirect(f"{c}?error=Invalid+token") if c \
-    else ('<h1>CDN</h1> Invalid token', 401)
+    else ('<h1>PDF</h1> Invalid token', 401)
 
   fid, content_type = str(uuid4()), f.content_type
   f.save('/tmp/' + fid)
   f.close()
 
   return redirect(f"{c}?fid={fid}&content_type={content_type}") if c \
-  else (f'<h1>CDN</h1> Uploaded {fid}', 200)
+  else (f'<h1>PDF</h1> Uploaded {fid}', 200)
 
 def valid(token):
   try:

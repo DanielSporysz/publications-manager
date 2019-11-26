@@ -5,12 +5,11 @@ services:
     image: chaberb/nginx-ssl
     depends_on:
       - web
-      - cdn
+      - pdf
     ports:
       - "443:443"
     volumes:
       - ./nginx-uwsgi.conf:/etc/nginx/nginx.conf
-
 
   web:
     image: flask_web
@@ -23,7 +22,7 @@ services:
     environment:
       FLASK_ENV: development
 
-  cdn:
+  pdf:
     image: flask_pdf
     depends_on:
     - db

@@ -15,7 +15,7 @@ HTML = """<!doctype html>
 <head><meta charset="utf-8"/></head>"""
 
 app = Flask(__name__)
-CDN = getenv("CDN_HOST")
+PDF = getenv("PDF_HOST")
 WEB = getenv("WEB_HOST")
 SESSION_TIME = int(getenv("SESSION_TIME"))
 JWT_SESSION_TIME = int(getenv('JWT_SESSION_TIME'))
@@ -51,9 +51,9 @@ def welcome():
     upload_token = create_upload_token().decode('ascii')
     return f"""{HTML}
     <h1>APP</h1>
-    <a href="{CDN}/download/{fid}?token={download_token}&content_type={content_type}">{fid}</a>
+    <a href="{PDF}/download/{fid}?token={download_token}&content_type={content_type}">{fid}</a>
 
-    <form action="{CDN}/upload" method="POST" enctype="multipart/form-data">
+    <form action="{PDF}/upload" method="POST" enctype="multipart/form-data">
       <input type="file" name="file"/>
       <input type="hidden" name="token"    value="{upload_token}" />
       <input type="hidden" name="callback" value="{WEB}/callback" />
