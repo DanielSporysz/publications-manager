@@ -5,6 +5,7 @@ from flask import request
 from flask import make_response
 from dotenv import load_dotenv
 from os import getenv
+import sys
 load_dotenv(verbose=True)
 
 app = Flask(__name__)
@@ -56,7 +57,7 @@ def valid(token):
   try:
     decode(token, JWT_SECRET)
   except InvalidTokenError as e:
-    app.logger.error(str(e))
+    print(str(e), file=sys.stderr)
     return False
   return True
 

@@ -13,8 +13,8 @@ services:
 
   web:
     image: flask_web
-    depends_on:
-    - db
+    links:
+    - web_db
     ports:
     - "5000:5000"
     volumes:
@@ -24,8 +24,8 @@ services:
 
   pdf:
     image: flask_pdf
-    depends_on:
-    - db
+    links:
+    - pdf_db
     ports:
     - "5001:5000"
     volumes:
@@ -33,5 +33,12 @@ services:
     environment:
       FLASK_ENV: development
 
-  db:
+  web_db:
     image: redis
+    ports:
+    - "6379:6379"
+
+  pdf_db:
+    image: redis
+    ports:
+    - "6380:6380"
