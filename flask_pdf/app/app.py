@@ -4,6 +4,7 @@ import redis
 from flask import Flask
 from flask import request
 from flask import make_response
+from flask import send_file
 import json
 from flask import jsonify
 import sys
@@ -34,14 +35,11 @@ def download(fid):
         return '<h1>PDF</h1> Incorrect token payload', 401
     if payload.get('action') is not None and payload.get('action') != "download":
         return '<h1>PDF</h1> Incorrect token payload', 401
+    username = payload.get("username")
 
-    content_type = request.headers.get(
-        'Accept') or request.args.get('content_type')
-    with open('/tmp/' + fid, 'rb') as f:
-        d = f.read()
-        response = make_response(d, 200)
-        response.headers['Content-Type'] = content_type
-        return response
+    f = cache.hget(username, fid)
+    filename = cache.get(fid).decode()
+    return send_file(f, attachment_filename=filename, as_attachment=True)
 
 
 @app.route('/upload', methods=['POST'])

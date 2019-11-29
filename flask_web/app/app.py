@@ -70,17 +70,24 @@ def welcome():
     if sessions_manager.validate_session(session_id) and username is not None:
         upload_token = tokens_manager.create_upload_token(
             username.decode()).decode('ascii')
+
         list_token = tokens_manager.create_getFileList_token(
             username.decode()).decode('ascii')
-
         req = requests.get("http://pdf:5000/files/" +
                            username.decode() + "?token=" + list_token)
-        if req.status_code == 200:
-            file_list = req.json()
-        else:
-            file_list = []
 
-        return render_template("welcome.html", file_list=file_list, PDF=PDF, upload_token=upload_token, WEB=WEB)
+        file_names = []
+        file_ids = []
+        download_tokens = []
+        if req.status_code == 200:
+            payload = req.json()
+            for key in payload.keys():
+                token = tokens_manager.create_download_token(username.decode(), key).decode('ascii')
+                file_names.append(payload[key])
+                file_ids.append(key)
+                download_tokens.append(token)
+
+        return render_template("welcome.html", package=zip(file_names, file_ids, download_tokens), upload_token=upload_token, PDF=PDF, WEB=WEB)
     return redirect("/login")
 
 
