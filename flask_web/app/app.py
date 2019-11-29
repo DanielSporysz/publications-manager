@@ -1,38 +1,41 @@
-from dbinit import init
-from jwt import encode
-from uuid import uuid4
 from flask import Flask
 from flask import request
 from flask import make_response
+import redis
+import rusers
+import rsessions
+import tokens
 from dotenv import load_dotenv
 from os import getenv
-import datetime
-import redis
 import sys
-load_dotenv(verbose=True)
-
-HTML = """<!doctype html>
-<head><meta charset="utf-8"/></head>"""
 
 app = Flask(__name__)
+
+load_dotenv(verbose=True)
 PDF = getenv("PDF_HOST")
 WEB = getenv("WEB_HOST")
 SESSION_TIME = int(getenv("SESSION_TIME"))
 JWT_SESSION_TIME = int(getenv('JWT_SESSION_TIME'))
 JWT_SECRET = getenv("JWT_SECRET")
 INVALIDATE = -1
+HTML = """<!doctype html>
+<head><meta charset="utf-8"/></head>"""
 
 cache = redis.Redis(host='web_db', port=6379, db=0)
-init(cache)
+usrs_manager = rusers.UsersManager(cache)
+usrs_manager.init_redis_with_users()
+sessions_manager = rsessions.SessionsManager(cache)
+tokens_creator = tokens.TokenCreator(
+    SESSION_TIME, JWT_SESSION_TIME, JWT_SECRET)
 
 
 @app.route('/')
 def index():
     session_id = request.cookies.get('session_id')
-    if session_id and cache.get(session_id) is not None:
+    if sessions_manager.validate_session(session_id):
         return redirect("/welcome")
     else:
-      return redirect("/login")
+        return redirect("/login")
 
 
 @app.route('/login')
@@ -54,10 +57,9 @@ def auth():
     response = make_response('', 303)
 
     #print(password, file=sys.stderr)
-    if password.encode() == cache.hget(username, "password"):
-        session_id = str(uuid4())
+    if usrs_manager.validate_credentials(username, password):
+        session_id = sessions_manager.create_session(username)
         response.set_cookie("session_id", session_id, max_age=SESSION_TIME)
-        cache.set(session_id, username)
         response.headers["Location"] = "/welcome"
     else:
         response.set_cookie("session_id", "INVALIDATE", max_age=INVALIDATE)
@@ -69,9 +71,8 @@ def auth():
 @app.route('/welcome')
 def welcome():
     session_id = request.cookies.get('session_id')
-    if session_id and cache.get(session_id) is not None:
-        upload_token = create_upload_token(
-            cache.get(session_id).decode()).decode('ascii')
+    if sessions_manager.validate_session(session_id):
+        upload_token = tokens_creator.create_upload_token().decode('ascii')
         return f"""{HTML}
     <h1>APP</h1>
     <form action="{PDF}/upload" method="POST" enctype="multipart/form-data">
@@ -87,7 +88,7 @@ def welcome():
 def logout():
     session_id = request.cookies.get('session_id')
     if session_id is not None:
-      cache.delete(session_id)
+        sessions_manager.delete_session(session_id)
 
     response = redirect("/login")
     response.set_cookie("session_id", "INVALIDATE", max_age=INVALIDATE)
@@ -108,30 +109,6 @@ def uploaded():
         return f"<h1>APP</h1> Upload successfull, but no fid returned", 500
     content_type = request.args.get('content_type', 'text/plain')
     return f"<h1>APP</h1> User {session_id} uploaded {fid} ({content_type})", 200
-
-
-def create_download_token(user):
-    exp = datetime.datetime.utcnow() + datetime.timedelta(seconds=JWT_SESSION_TIME)
-    payload = {
-        "iss": "web.company.com",
-        "exp": exp,
-        "user": user,
-    }
-    return encode(payload, JWT_SECRET, "HS256")
-
-
-def create_upload_token(user):
-    return create_download_token(user)
-
-
-def create_getFileList_token(user):
-    exp = datetime.datetime.utcnow() + datetime.timedelta(seconds=JWT_SESSION_TIME)
-    payload = {
-        "iss": "web.company.com",
-        "exp": exp,
-        "user": user,
-    }
-    return encode(payload, JWT_SECRET, "HS256")
 
 
 def redirect(location):
