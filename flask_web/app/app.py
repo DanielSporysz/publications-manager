@@ -1,6 +1,7 @@
 from flask import Flask
 from flask import request
 from flask import make_response
+from flask import render_template
 import redis
 import rusers
 import rsessions
@@ -18,8 +19,6 @@ SESSION_TIME = int(getenv("SESSION_TIME"))
 JWT_SESSION_TIME = int(getenv('JWT_SESSION_TIME'))
 JWT_SECRET = getenv("JWT_SECRET")
 INVALIDATE = -1
-HTML = """<!doctype html>
-<head><meta charset="utf-8"/></head>"""
 
 cache = redis.Redis(host='web_db', port=6379, db=0)
 usrs_manager = rusers.UsersManager(cache)
@@ -40,13 +39,7 @@ def index():
 
 @app.route('/login')
 def login():
-    return f"""{HTML}
-  <h1>APP</h1>
-  <form action="/auth" method="POST">
-    <input type="text"     name="username" placeholder="Username"></input>
-    <input type="password" name="password" placeholder="Password"></input>
-    <input type="submit"/>
-  </form>"""
+    return render_template("login.html")
 
 
 @app.route('/auth', methods=['POST'])
@@ -73,14 +66,7 @@ def welcome():
     session_id = request.cookies.get('session_id')
     if sessions_manager.validate_session(session_id):
         upload_token = tokens_creator.create_upload_token().decode('ascii')
-        return f"""{HTML}
-    <h1>APP</h1>
-    <form action="{PDF}/upload" method="POST" enctype="multipart/form-data">
-      <input type="file" name="file"/>
-      <input type="hidden" name="token"    value="{upload_token}" />
-      <input type="hidden" name="callback" value="{WEB}/callback" />
-      <input type="submit"/>
-    </form> """
+        return render_template("welcome.html", PDF=PDF, upload_token=upload_token, WEB=WEB)
     return redirect("/login")
 
 
