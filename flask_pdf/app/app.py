@@ -30,6 +30,8 @@ def download(fid):
     payload = decode(token, JWT_SECRET)
     if payload.get('fid', fid) != fid:
         return '<h1>PDF</h1> Incorrect token payload', 401
+    if payload.get('action') is not None and payload.get('action') != "download":
+        return '<h1>PDF</h1> Incorrect token payload', 401
 
     content_type = request.headers.get(
         'Accept') or request.args.get('content_type')
@@ -58,6 +60,9 @@ def upload():
 
     payload = decode(t, JWT_SECRET)
     if payload.get("username") is None:
+        return redirect(f"{c}?error=Invalid+token") if c \
+            else ('<h1>PDF</h1> Invalid token', 401)
+    if payload.get('action') is not None and payload.get('action') != "upload":
         return redirect(f"{c}?error=Invalid+token") if c \
             else ('<h1>PDF</h1> Invalid token', 401)
 

@@ -14,7 +14,8 @@ class TokenManager:
             "iss": "web.company.com",
             "exp": exp,
             "username": username,
-            "fid": fid
+            "fid": fid,
+            "action": "download"
         }
         return encode(payload, self.jwt_secret, "HS256")
 
@@ -24,6 +25,7 @@ class TokenManager:
             "iss": "web.company.com",
             "exp": exp,
             "username": username,
+            "action": "upload"
         }
         return encode(payload, self.jwt_secret, "HS256")
 
@@ -33,5 +35,6 @@ class TokenManager:
             "iss": "web.company.com",
             "exp": exp,
             "username": username,
+            "action": "fileList"
         }
         return encode(payload, self.jwt_secret, "HS256")
