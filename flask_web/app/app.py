@@ -2,6 +2,8 @@ from flask import Flask
 from flask import request
 from flask import make_response
 from flask import render_template
+import requests
+import json
 import redis
 import rusers
 import rsessions
@@ -68,7 +70,17 @@ def welcome():
     if sessions_manager.validate_session(session_id) and username is not None:
         upload_token = tokens_manager.create_upload_token(
             username.decode()).decode('ascii')
-        return render_template("welcome.html", PDF=PDF, upload_token=upload_token, WEB=WEB)
+        list_token = tokens_manager.create_getFileList_token(
+            username.decode()).decode('ascii')
+
+        req = requests.get("http://pdf:5000/files/" +
+                           username.decode() + "?token=" + list_token)
+        if req.status_code == 200:
+            file_list = req.json()
+        else:
+            file_list = []
+
+        return render_template("welcome.html", file_list=file_list, PDF=PDF, upload_token=upload_token, WEB=WEB)
     return redirect("/login")
 
 

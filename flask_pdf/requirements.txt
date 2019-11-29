@@ -2,3 +2,4 @@ flask
 redis
 pyjwt
 python-dotenv
+requests

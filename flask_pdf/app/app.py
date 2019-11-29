@@ -4,6 +4,8 @@ import redis
 from flask import Flask
 from flask import request
 from flask import make_response
+import json
+from flask import jsonify
 import sys
 from os import getenv
 from dotenv import load_dotenv
@@ -76,10 +78,38 @@ def upload():
         else (f'<h1>PDF</h1> Uploaded {f.filename} - {fid}', 200)
 
 
+@app.route('/files/<username>', methods=['GET'])
+def files(username):
+    token = request.headers.get('token') or request.args.get('token')
+    if len(username) == 0:
+        return '<h1>PDF</h1> Missing fid', 404
+    if token is None:
+        return '<h1>PDF</h1> No token', 401
+    if not valid(token):
+        return '<h1>PDF</h1> Invalid token', 401
+    payload = decode(token, JWT_SECRET)
+    if payload.get('action') is not None and payload.get('action') != "fileList":
+        return '<h1>PDF</h1> Incorrect token payload', 401
+
+    fnames = {}
+    file_ids = cache.hkeys(username)
+    if file_ids is not None:
+      for fid in file_ids:
+        fnames[fid.decode()] = cache.get(fid.decode()).decode()
+    
+    return jsonify(fnames)
+
+
 def valid(token):
     try:
         decode(token, JWT_SECRET)
     except InvalidTokenError as e:
+        print(str(e), file=sys.stderr)
+        print(str(e), file=sys.stderr)
+        print(str(e), file=sys.stderr)
+        print(str(e), file=sys.stderr)
+        print(str(e), file=sys.stderr)
+        print(str(e), file=sys.stderr)
         print(str(e), file=sys.stderr)
         return False
     return True
