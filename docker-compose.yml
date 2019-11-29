@@ -35,10 +35,6 @@ services:
 
   web_db:
     image: redis
-    ports:
-    - "6379:6379"
 
   pdf_db:
     image: redis
-    ports:
-    - "6380:6380"

@@ -25,3 +25,8 @@ class SessionsManager:
             return True
         else:
             return False
+
+    def get_session_user(self, session_id):
+        if session_id is not None:
+            return self.cache.hget(self.sessions_key_to_redis, session_id)
+        return False

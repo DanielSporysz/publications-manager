@@ -2,24 +2,36 @@ import datetime
 from jwt import encode
 
 
-class TokenCreator:
+class TokenManager:
     def __init__(self, session_time, jwt_session_time, jwt_secret):
         self.session_time = session_time
         self.jwt_session_time = jwt_session_time
         self.jwt_secret = jwt_secret
 
-    def create_download_token(self):
+    def create_download_token(self, username, fid):
         exp = datetime.datetime.utcnow() + datetime.timedelta(seconds=self.jwt_session_time)
-        data = {
+        payload = {
             "iss": "web.company.com",
             "exp": exp,
+            "username": username,
+            "fid": fid
         }
-        return encode(data, self.jwt_secret, "HS256")
+        return encode(payload, self.jwt_secret, "HS256")
 
-    def create_upload_token(self):
-        return self.create_download_token()
+    def create_upload_token(self, username):
+        exp = datetime.datetime.utcnow() + datetime.timedelta(seconds=self.jwt_session_time)
+        payload = {
+            "iss": "web.company.com",
+            "exp": exp,
+            "username": username,
+        }
+        return encode(payload, self.jwt_secret, "HS256")
 
-    # TODO ADD USER TO THE TOKEN
-
-    def create_getFileList_token(self):
-        return self.create_download_token()
+    def create_getFileList_token(self, username):
+        exp = datetime.datetime.utcnow() + datetime.timedelta(seconds=self.jwt_session_time)
+        payload = {
+            "iss": "web.company.com",
+            "exp": exp,
+            "username": username,
+        }
+        return encode(payload, self.jwt_secret, "HS256")

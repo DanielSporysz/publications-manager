@@ -24,7 +24,7 @@ cache = redis.Redis(host='web_db', port=6379, db=0)
 usrs_manager = rusers.UsersManager(cache)
 usrs_manager.init_redis_with_users()
 sessions_manager = rsessions.SessionsManager(cache)
-tokens_creator = tokens.TokenCreator(
+tokens_manager = tokens.TokenManager(
     SESSION_TIME, JWT_SESSION_TIME, JWT_SECRET)
 
 
@@ -64,8 +64,10 @@ def auth():
 @app.route('/welcome')
 def welcome():
     session_id = request.cookies.get('session_id')
-    if sessions_manager.validate_session(session_id):
-        upload_token = tokens_creator.create_upload_token().decode('ascii')
+    username = sessions_manager.get_session_user(session_id)
+    if sessions_manager.validate_session(session_id) and username is not None:
+        upload_token = tokens_manager.create_upload_token(
+            username.decode()).decode('ascii')
         return render_template("welcome.html", PDF=PDF, upload_token=upload_token, WEB=WEB)
     return redirect("/login")
 
@@ -84,17 +86,20 @@ def logout():
 @app.route('/callback')
 def uploaded():
     session_id = request.cookies.get('session_id')
+    if not session_id or not sessions_manager.validate_session(session_id):
+        return redirect("/login")
+
+    fname = request.args.get('filename')
     fid = request.args.get('fid')
     err = request.args.get('error')
-    if not session_id:
-        return redirect("/login")
 
     if err:
         return f"<h1>APP</h1> Upload failed: {err}", 400
-    if not fid:
-        return f"<h1>APP</h1> Upload successfull, but no fid returned", 500
+    if not fid or not fname:
+        return f"<h1>APP</h1> Upload successfull, but no fid/file name returned", 500
     content_type = request.args.get('content_type', 'text/plain')
-    return f"<h1>APP</h1> User {session_id} uploaded {fid} ({content_type})", 200
+    username = sessions_manager.get_session_user(session_id).decode()
+    return f"<h1>APP</h1> User {username} uploaded {fname} - {fid} ({content_type})", 200
 
 
 def redirect(location):
