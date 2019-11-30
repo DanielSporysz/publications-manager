@@ -65,29 +65,37 @@ def auth():
 def welcome():
     session_id = request.cookies.get('session_id')
     username = sessions_manager.get_session_user(session_id)
+
     if sessions_manager.validate_session(session_id) and username is not None:
         upload_token = tokens_manager.create_upload_token(
             username.decode()).decode('ascii')
-
         list_token = tokens_manager.create_getFileList_token(
             username.decode()).decode('ascii')
-        req = requests.get("http://pdf:5000/files/" +
-                           username.decode() + "?token=" + list_token)
+        zip_of_file_list = get_zip_of_file_list(username.decode(), list_token)
 
-        file_names = []
-        file_ids = []
-        download_tokens = []
-        if req.status_code == 200:
-            payload = req.json()
-            for key in payload.keys():
-                token = tokens_manager.create_download_token(
-                    username.decode(), key).decode('ascii')
-                file_names.append(payload[key])
-                file_ids.append(key)
-                download_tokens.append(token)
+        return render_template("welcome.html", package=zip_of_file_list, upload_token=upload_token, PDF=PDF, WEB=WEB)
+    else:
+        return redirect("/login")
 
-        return render_template("welcome.html", package=zip(file_names, file_ids, download_tokens), upload_token=upload_token, PDF=PDF, WEB=WEB)
-    return redirect("/login")
+
+def get_zip_of_file_list(username, list_token):
+    req = requests.get("http://pdf:5000/files/" +
+                       username + "?token=" + list_token)
+
+    file_names = []
+    file_ids = []
+    download_tokens = []
+    if req.status_code == 200:
+        payload = req.json()
+        for fid in payload.keys():
+            token = tokens_manager.create_download_token(
+                username, fid).decode('ascii')
+
+            file_names.append(payload[fid])
+            file_ids.append(fid)
+            download_tokens.append(token)
+
+    return zip(file_names, file_ids, download_tokens)
 
 
 @app.route('/logout')
@@ -116,7 +124,7 @@ def uploaded():
         return f"<h1>APP</h1> Upload failed: {err}", 400
     if not fid or not fname:
         return f"<h1>APP</h1> Upload successfull, but no fid/file name returned", 500
-    
+
     return f"<h1>APP</h1> User {username} uploaded {fname} - {fid}", 200
 
 

@@ -93,15 +93,24 @@ def upload():
 
 @app.route('/files/<username>', methods=['GET'])
 def files(username):
-    token = request.headers.get('token') or request.args.get('token')
     if len(username) == 0:
         return '<h1>PDF</h1> Missing fid', 404
+
+    token = request.headers.get('token') or request.args.get('token')
     if token is None:
         return '<h1>PDF</h1> No token', 401
     if not valid(token):
         return '<h1>PDF</h1> Invalid token', 401
     payload = decode(token, JWT_SECRET)
-    if payload.get('action') is not None and payload.get('action') != "fileList":
+
+    p_username = payload.get('username')
+    p_action = payload.get('action')
+    try:
+        if p_username is None or p_action is None:
+            raise Exception()
+        if p_action != "fileList":
+            raise Exception()
+    except:
         return '<h1>PDF</h1> Incorrect token payload', 401
 
     fnames = {}
