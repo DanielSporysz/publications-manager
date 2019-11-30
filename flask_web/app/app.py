@@ -7,7 +7,7 @@ import json
 import redis
 import rusers
 import rsessions
-import tokens
+import tokenscrt
 from dotenv import load_dotenv
 from os import getenv
 import sys
@@ -26,14 +26,13 @@ cache = redis.Redis(host='web_db', port=6379, db=0)
 usrs_manager = rusers.UsersManager(cache)
 usrs_manager.init_redis_with_users()  # DEV method
 sessions_manager = rsessions.SessionsManager(cache)
-tokens_manager = tokens.TokenManager(
-    SESSION_TIME, JWT_SESSION_TIME, JWT_SECRET)
+tokens_manager = tokenscrt.TokenCreator(JWT_SESSION_TIME, JWT_SECRET)
 
 
 @app.route('/')
 def index():
     session_id = request.cookies.get('session_id')
-    if sessions_manager.validate_session(session_id):
+    if session_id is not None and sessions_manager.validate_session(session_id):
         return redirect("/welcome")
     else:
         return redirect("/login")
@@ -50,8 +49,8 @@ def auth():
     password = request.form.get('password')
 
     response = make_response('', 303)
-
-    if usrs_manager.validate_credentials(username, password):
+    if username is not None and password is not None and \
+            usrs_manager.validate_credentials(username, password):
         session_id = sessions_manager.create_session(username)
         response.set_cookie("session_id", session_id, max_age=SESSION_TIME)
         response.headers["Location"] = "/welcome"
@@ -111,14 +110,14 @@ def uploaded():
     fname = request.args.get('filename')
     fid = request.args.get('fid')
     err = request.args.get('error')
+    username = sessions_manager.get_session_user(session_id).decode()
 
     if err:
         return f"<h1>APP</h1> Upload failed: {err}", 400
     if not fid or not fname:
         return f"<h1>APP</h1> Upload successfull, but no fid/file name returned", 500
-    content_type = request.args.get('content_type', 'text/plain')
-    username = sessions_manager.get_session_user(session_id).decode()
-    return f"<h1>APP</h1> User {username} uploaded {fname} - {fid} ({content_type})", 200
+    
+    return f"<h1>APP</h1> User {username} uploaded {fname} - {fid}", 200
 
 
 def redirect(location):

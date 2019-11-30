@@ -68,23 +68,27 @@ def upload():
     if not valid(t):
         return redirect(f"{c}?error=Invalid+token") if c \
             else ('<h1>PDF</h1> Invalid token', 401)
-
     payload = decode(t, JWT_SECRET)
-    if payload.get("username") is None:
-        return redirect(f"{c}?error=Invalid+token") if c \
-            else ('<h1>PDF</h1> Invalid token', 401)
-    if payload.get('action') is not None and payload.get('action') != "upload":
-        return redirect(f"{c}?error=Invalid+token") if c \
-            else ('<h1>PDF</h1> Invalid token', 401)
 
-    fid, content_type = str(uuid4()), f.content_type
-    username = payload.get("username")
+    fid = str(uuid4())
+    p_username = payload.get('username')
+    p_action = payload.get('action')
+    try:
+        if p_username is None or p_action is None:
+            raise Exception()
+        if p_action != "upload":
+            raise Exception()
+    except:
+        return '<h1>PDF</h1> Incorrect token payload', 401
 
-    cache.hset(username, fid, f.read())
-    cache.set(fid, f.filename)
-
-    return redirect(f"{c}?filename={f.filename}&fid={fid}&content_type={content_type}") if c \
-        else (f'<h1>PDF</h1> Uploaded {f.filename} - {fid}', 200)
+    try:
+        cache.hset(p_username, fid, f.read())
+        cache.set(fid, f.filename)
+        return redirect(f"{c}?filename={f.filename}&fid={fid}") if c \
+            else (f'<h1>PDF</h1> Uploaded {f.filename} - {fid}', 200)
+    except:
+        return redirect(f"{c}?error=Error+while+saving+a+file") if c \
+            else ('<h1>PDF</h1> Error while saving a file', 500)
 
 
 @app.route('/files/<username>', methods=['GET'])
@@ -113,12 +117,6 @@ def valid(token):
     try:
         decode(token, JWT_SECRET)
     except InvalidTokenError as e:
-        print(str(e), file=sys.stderr)
-        print(str(e), file=sys.stderr)
-        print(str(e), file=sys.stderr)
-        print(str(e), file=sys.stderr)
-        print(str(e), file=sys.stderr)
-        print(str(e), file=sys.stderr)
         print(str(e), file=sys.stderr)
         return False
     return True

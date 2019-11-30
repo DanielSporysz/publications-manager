@@ -2,9 +2,8 @@ import datetime
 from jwt import encode
 
 
-class TokenManager:
-    def __init__(self, session_time, jwt_session_time, jwt_secret):
-        self.session_time = session_time
+class TokenCreator:
+    def __init__(self, jwt_session_time, jwt_secret):
         self.jwt_session_time = jwt_session_time
         self.jwt_secret = jwt_secret
 
