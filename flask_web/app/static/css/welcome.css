@@ -1,0 +1,32 @@
+a.logout {
+    align-content: right;
+}
+
+a.downloadfile {
+    display: inline-block;
+    width: 80%;
+}
+
+div.welcome {
+    max-width: 600px;
+    margin: 10px auto;
+    padding: 17px 20px;
+    background: #dadada;
+    border-radius: 8px;
+}
+
+fieldset.welcome {
+    margin: 10px auto;
+}
+
+button.sendfile {
+    width: 20%;
+    color: #FFF;
+    background-color: #4bc970;
+    text-align: center;
+    font-style: normal;
+}
+
+input.file {
+    width: 78%;
+}

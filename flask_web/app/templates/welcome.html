@@ -7,22 +7,27 @@
 </head>
 
 <body>
-    <div class="div appbar">
-        <h1 class="h1 maintitle">APP</h1>
-        <a href="{{WEB}}/logout">Logout</a>
-    </div>
+    <h1 class="h1 maintitle">WEB APP</h1>
+    <div class="div welcome">
+        <div class="div user">
+            Welcome <b>{{username}}</b>!
+            <a class="a logout" href="{{WEB}}/logout">Logout</a>
+        </div>
 
-    <div class="div filelist">
-        {% for fname, fid, ftoken in package %}
-        <a class="a file" href="{{PDF}}/download/{{fid}}?token={{ftoken}}">{{ fname }}</a> {% endfor %}
-    </div>
+        <fieldset class="fieldset welcome">
+            <legend>Upload a new file:</legend>
+            <form action="{{PDF}}/upload" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="token" value="{{upload_token}}" />
+                <input type="hidden" name="callback" value="{{WEB}}/callback" />
+                <input class="input file" type="file" name="file" id="file" required/>
+                <button class="button sendfile" type="submit">Upload file</button>
+            </form>
+        </fieldset>
 
-    <div class="div upload">
-        <form action="{{PDF}}/upload" method="POST" enctype="multipart/form-data">
-            <input type="file" name="file" />
-            <input type="hidden" name="token" value="{{upload_token}}" />
-            <input type="hidden" name="callback" value="{{WEB}}/callback" />
-            <input type="submit" />
-        </form>
+        <fieldset class="fieldset welcome">
+            <legend>List of your files:</legend>
+            {% for fname, fid, ftoken in package %}
+            <a class="a downloadfile" href="{{PDF}}/download/{{fid}}?token={{ftoken}}">{{ fname }}</a> {% endfor %}
+        </fieldset>
     </div>
 </body>

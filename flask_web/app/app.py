@@ -73,7 +73,8 @@ def welcome():
             username.decode()).decode('ascii')
         zip_of_file_list = get_zip_of_file_list(username.decode(), list_token)
 
-        return render_template("welcome.html", package=zip_of_file_list, upload_token=upload_token, PDF=PDF, WEB=WEB)
+        return render_template("welcome.html", package=zip_of_file_list,
+                               upload_token=upload_token, PDF=PDF, WEB=WEB, username=username.decode())
     else:
         return redirect("/login")
 

@@ -7,14 +7,14 @@ form.login {
 }
 
 input.login {
-    margin: 5px;
+    margin: 5px 0px;
     border: 1px;
     padding: 10px;
     width: 100%;
 }
 
-button {
-    margin: 5px;
+button.login {
+    margin: 5px 0px;
     border: 1px;
     padding: 10px;
     width: 100%;
