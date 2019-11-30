@@ -1,0 +1,26 @@
+div.callback {
+    max-width: 600px;
+    margin: 10px auto;
+    padding: 17px 20px;
+    background: #dadada;
+    border-radius: 8px;
+}
+
+div.message {
+    margin: 10px auto;
+}
+
+div.return {
+    text-align: center;
+}
+
+button.return {
+    margin: 5px 0px;
+    border: 1px;
+    padding: 10px;
+    width: auto;
+    color: #FFF;
+    background-color: #4bc970;
+    text-align: center;
+    font-style: normal;
+}

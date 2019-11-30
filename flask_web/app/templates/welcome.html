@@ -12,10 +12,12 @@
     <div class="div welcome">
         <div class="div user">
             Welcome <b>{{username}}</b>!
-            <a class="a logout" href="{{WEB}}/logout">Logout</a>
+            <form class="form logout" action="/logout" method="GET">
+                <button class="button logout" type="submit">Log out</button>
+            </form>
         </div>
 
-        <fieldset class="fieldset welcome">
+        <fieldset class="fieldset">
             <legend>Upload a new file:</legend>
             <form action="{{PDF}}/upload" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="token" value="{{upload_token}}" />
@@ -25,7 +27,7 @@
             </form>
         </fieldset>
 
-        <fieldset class="fieldset welcome">
+        <fieldset class="fieldset">
             <legend>List of your files:</legend>
             {% for fname, fid, ftoken in package %}
             <a class="a downloadfile" href="{{PDF}}/download/{{fid}}?token={{ftoken}}">{{ fname }}</a> {% endfor %}

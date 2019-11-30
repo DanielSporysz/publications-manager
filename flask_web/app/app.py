@@ -121,12 +121,15 @@ def uploaded():
     err = request.args.get('error')
     username = sessions_manager.get_session_user(session_id).decode()
 
+    msg = []
     if err:
-        return f"<h1>APP</h1> Upload failed: {err}", 400
-    if not fid or not fname:
-        return f"<h1>APP</h1> Upload successfull, but no fid/file name returned", 500
+        msg = "Upload failed: " + str(err)
+    elif not fid or not fname:
+        msg = "Upload successfull, but no fid/file name returned."
+    else:
+        msg = "File " + str(fname) + " uploaded successfully."
 
-    return f"<h1>APP</h1> User {username} uploaded {fname} - {fid}", 200
+    return render_template("callback.html", msg=msg, username=username)
 
 
 def redirect(location):
