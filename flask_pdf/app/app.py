@@ -23,22 +23,32 @@ cache = redis.Redis(host='pdf_db', port=6379, db=0)
 
 @app.route('/download/<fid>')
 def download(fid):
-    token = request.headers.get('token') or request.args.get('token')
     if len(fid) == 0:
         return '<h1>PDF</h1> Missing fid', 404
+
+    token = request.headers.get('token') or request.args.get('token')
     if token is None:
         return '<h1>PDF</h1> No token', 401
     if not valid(token):
         return '<h1>PDF</h1> Invalid token', 401
-    payload = decode(token, JWT_SECRET)
-    if payload.get('fid', fid) != fid:
-        return '<h1>PDF</h1> Incorrect token payload', 401
-    if payload.get('action') is not None and payload.get('action') != "download":
-        return '<h1>PDF</h1> Incorrect token payload', 401
-    username = payload.get("username")
 
-    f = cache.hget(username, fid)
-    filename = cache.get(fid).decode()
+    payload = decode(token, JWT_SECRET)
+    try:
+        p_fid = payload.get('fid')
+        p_username = payload.get('username')
+        p_action = payload.get('action')
+    except:
+        return '<h1>PDF</h1> Incorrect token payload', 401
+
+    if p_fid != fid or p_action != "download":
+        return '<h1>PDF</h1> Incorrect token payload', 401
+
+    try:
+        f = cache.hget(p_username, p_fid)
+        filename = cache.get(p_fid).decode()
+    except:
+        return '<h1>PDF</h1> File not found', 404
+
     return send_file(f, attachment_filename=filename, as_attachment=True)
 
 
@@ -92,9 +102,9 @@ def files(username):
     fnames = {}
     file_ids = cache.hkeys(username)
     if file_ids is not None:
-      for fid in file_ids:
-        fnames[fid.decode()] = cache.get(fid.decode()).decode()
-    
+        for fid in file_ids:
+            fnames[fid.decode()] = cache.get(fid.decode()).decode()
+
     return jsonify(fnames)
 
 

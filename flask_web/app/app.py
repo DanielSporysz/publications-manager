@@ -24,7 +24,7 @@ INVALIDATE = -1
 
 cache = redis.Redis(host='web_db', port=6379, db=0)
 usrs_manager = rusers.UsersManager(cache)
-usrs_manager.init_redis_with_users()
+usrs_manager.init_redis_with_users() # DEV method
 sessions_manager = rsessions.SessionsManager(cache)
 tokens_manager = tokens.TokenManager(
     SESSION_TIME, JWT_SESSION_TIME, JWT_SECRET)
@@ -51,7 +51,6 @@ def auth():
 
     response = make_response('', 303)
 
-    #print(password, file=sys.stderr)
     if usrs_manager.validate_credentials(username, password):
         session_id = sessions_manager.create_session(username)
         response.set_cookie("session_id", session_id, max_age=SESSION_TIME)
