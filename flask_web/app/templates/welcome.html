@@ -1,20 +1,28 @@
 <!doctype html>
 
 <head>
-  <meta charset="utf-8" />
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sharedstyle.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/welcome.css') }}">
 </head>
-<h1>APP</h1>
-<a href="{{WEB}}/logout">Logout</a>
-<div class="fiList container">
-  {% for fname, fid, ftoken in package %}
-  <a class="fiList element" href="{{PDF}}/download/{{fid}}?token={{ftoken}}">{{ fname }}</a>
-  {% endfor %}
-</div>
-<div class="upload container">
-  <form action="{{PDF}}/upload" method="POST" enctype="multipart/form-data">
-    <input type="file" name="file" />
-    <input type="hidden" name="token" value="{{upload_token}}" />
-    <input type="hidden" name="callback" value="{{WEB}}/callback" />
-    <input type="submit" />
-  </form>
-</div>
+
+<body>
+    <div class="div appbar">
+        <h1 class="h1 maintitle">APP</h1>
+        <a href="{{WEB}}/logout">Logout</a>
+    </div>
+
+    <div class="div filelist">
+        {% for fname, fid, ftoken in package %}
+        <a class="a file" href="{{PDF}}/download/{{fid}}?token={{ftoken}}">{{ fname }}</a> {% endfor %}
+    </div>
+
+    <div class="div upload">
+        <form action="{{PDF}}/upload" method="POST" enctype="multipart/form-data">
+            <input type="file" name="file" />
+            <input type="hidden" name="token" value="{{upload_token}}" />
+            <input type="hidden" name="callback" value="{{WEB}}/callback" />
+            <input type="submit" />
+        </form>
+    </div>
+</body>

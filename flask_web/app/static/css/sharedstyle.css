@@ -1,0 +1,12 @@
+* {
+    box-sizing: border-box;
+    font-family: 'Nunito', sans-serif;
+}
+
+h1.maintitle {
+    text-align: center;
+}
+
+body {
+    color: #384047;
+}
