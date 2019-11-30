@@ -24,7 +24,7 @@ INVALIDATE = -1
 
 cache = redis.Redis(host='web_db', port=6379, db=0)
 usrs_manager = rusers.UsersManager(cache)
-usrs_manager.init_redis_with_users() # DEV method
+usrs_manager.init_redis_with_users()  # DEV method
 sessions_manager = rsessions.SessionsManager(cache)
 tokens_manager = tokens.TokenManager(
     SESSION_TIME, JWT_SESSION_TIME, JWT_SECRET)
@@ -81,7 +81,8 @@ def welcome():
         if req.status_code == 200:
             payload = req.json()
             for key in payload.keys():
-                token = tokens_manager.create_download_token(username.decode(), key).decode('ascii')
+                token = tokens_manager.create_download_token(
+                    username.decode(), key).decode('ascii')
                 file_names.append(payload[key])
                 file_ids.append(key)
                 download_tokens.append(token)

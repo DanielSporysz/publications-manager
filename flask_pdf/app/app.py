@@ -31,16 +31,17 @@ def download(fid):
         return '<h1>PDF</h1> No token', 401
     if not valid(token):
         return '<h1>PDF</h1> Invalid token', 401
-
     payload = decode(token, JWT_SECRET)
-    try:
-        p_fid = payload.get('fid')
-        p_username = payload.get('username')
-        p_action = payload.get('action')
-    except:
-        return '<h1>PDF</h1> Incorrect token payload', 401
 
-    if p_fid != fid or p_action != "download":
+    p_fid = payload.get('fid')
+    p_username = payload.get('username')
+    p_action = payload.get('action')
+    try:
+        if p_fid is None or p_username is None or p_action is None:
+            raise Exception()
+        if p_fid != fid or p_action != "download":
+            raise Exception()
+    except:
         return '<h1>PDF</h1> Incorrect token payload', 401
 
     try:
