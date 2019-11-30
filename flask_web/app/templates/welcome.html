@@ -2,7 +2,7 @@
 <head><meta charset="utf-8"/></head>
 <h1>APP</h1>
     {% for fname, fid, ftoken in package %}
-    <a class="fiList" href="https://pdf.company.com/download/{{fid}}?token={{ftoken}}&content_type=multipart/form-data&username={{ username }}">{{ fname }}</a>
+    <a class="fiList" href="https://pdf.company.com/download/{{fid}}?token={{ftoken}}">{{ fname }}</a>
     {% endfor %}
     <form action="{{PDF}}/upload" method="POST" enctype="multipart/form-data">
       <input type="file" name="file"/>
