@@ -46,11 +46,12 @@ def download(fid):
 
     try:
         f = cache.hget(p_username, p_fid)
-        filename = cache.get(p_fid).decode()
+        file_name = cache.get(p_fid).decode()
+
+        headers = {"Content-Disposition": "attachment; filename=%s" % file_name}
+        return make_response((f, headers))
     except:
         return '<h1>PDF</h1> File not found', 404
-
-    return send_file(f, attachment_filename=filename, as_attachment=True)
 
 
 @app.route('/upload', methods=['POST'])
