@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 services:
   nginx:
@@ -14,24 +14,16 @@ services:
   web:
     build: flask_web
     links:
-    - web_db
-    ports:
-    - "5000:5000"
+      - web_db
     volumes:
-    - ./flask_web/app:/var/www/app
-    environment:
-      FLASK_ENV: development
+      - ./flask_web/app:/var/www/app
 
   pdf:
     build: flask_pdf
     links:
-    - pdf_db
-    ports:
-    - "5001:5000"
+      - pdf_db
     volumes:
-    - ./flask_pdf/app:/var/pdf/app
-    environment:
-      FLASK_ENV: development
+      - ./flask_pdf/app:/var/pdf/app
 
   web_db:
     image: redis
