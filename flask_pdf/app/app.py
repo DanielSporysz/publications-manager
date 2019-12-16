@@ -4,8 +4,6 @@ import redis
 from flask import Flask
 from flask import request
 from flask import make_response
-from flask import send_file
-import json
 from flask import jsonify
 import sys
 from os import getenv
@@ -121,6 +119,12 @@ def files(username):
             fnames[fid.decode()] = cache.get(fid.decode()).decode()
 
     return jsonify(fnames)
+
+
+# TODO handle file deletion
+@app.route('/delete/<fid>')
+def delete(fid):
+    return "TODO handle file deletion", 200
 
 
 def valid(token):

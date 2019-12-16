@@ -1,0 +1,13 @@
+P3. Opracowanie usługi sieciowej i dwóch klientów do niej. Usługa sieciowa musi pozwalać na:
+* dodawanie pozycji bibliograficznej,
+* listowanie pozycji bibliograficznych,
+* usuwaniu pozycji bibliograficznych,
+* podpinanie i odpinanie plików przy pozycji bibliograficznej,
+* dodawanie, pobieranie i usuwanie plików.
+
+Usługa sieciowa powinna zwracać powiązane elementy (HATEOAS).
+Należy zwrócić uwagę na wykorzystanie odpowiednich metod HTTP oraz zwracanie poprawnych kodów statusu.
+
+Jednym z klientów powinna być aplikacja `web` (ta, która wystawiała żetony dla aplikacji `pdf`). 
+Drugim klientem może być: aplikacja mobilna na Android, aplikacja konsolowa w trybie interaktywnym
+ lub aplikacja biurkowa (w Qt, GTK lub Java Swing/Java FX).

@@ -3,14 +3,12 @@ from flask import request
 from flask import make_response
 from flask import render_template
 import requests
-import json
 import redis
 import rusers
 import rsessions
 import tokenscrt
 from dotenv import load_dotenv
 from os import getenv
-import sys
 
 app = Flask(__name__)
 
@@ -136,3 +134,62 @@ def redirect(location):
     response = make_response('', 303)
     response.headers["Location"] = location
     return response
+
+
+'''
+
+
+Publications API
+'''
+
+@app.route('/api')
+def api0():
+    return "hello2", 200
+
+
+# TODO return a token validating a user
+@app.route('/api/login')
+def api1():
+    return "hello", 200
+
+
+# TODO return list of user's publications
+@app.route('/api/publications/list')
+def api20():
+    return "hello", 200
+
+
+# TODO receive and update publication
+@app.route('/api/publications/update')
+def api21():
+    return "hello", 200
+
+
+# TODO receive and save new publication
+@app.route('/api/publications/new')
+def api22():
+    return "hello", 200
+
+
+# TODO handle publication deletion
+@app.route('/api/publications/delete')
+def api23():
+    return "hello", 200
+
+
+# TODO handle file download
+@app.route('/api/publications/file/download')
+def api41():
+    return "hello", 200
+
+
+# TODO handle file upload
+@app.route('/api/publications/file/upload')
+def api42():
+    return "hello", 200
+
+
+# TODO handle file deletion
+@app.route('/api/publications/file/delete')
+def api43():
+    return "hello", 200
