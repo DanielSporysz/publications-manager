@@ -2,6 +2,7 @@ from flask import Flask
 from flask import request
 from flask import make_response
 from flask import render_template
+from flask import jsonify
 import requests
 import redis
 import rusers
@@ -142,15 +143,14 @@ def redirect(location):
 Publications API
 '''
 
-@app.route('/api')
+@app.route('/api/utoken')
 def api0():
-    return "hello2", 200
-
-
-# TODO return a token validating a user
-@app.route('/api/login')
-def api1():
-    return "hello", 200
+    token = tokens_manager.create_user_token("danielek")
+    responseObject = {
+        'status': 'success',
+        'auth_token': token.decode()
+    }
+    return make_response(jsonify(responseObject)), 201
 
 
 # TODO return list of user's publications
