@@ -8,10 +8,12 @@ import javafx.scene.Scene;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.util.Map;
 
 public class LoginWindowController {
     @FXML
@@ -50,12 +52,33 @@ public class LoginWindowController {
     }
 
     private boolean validateCredentials() throws IOException {
-        URL url = new URL("https://web.company.com/api/");
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-        con.setRequestMethod("GET");
+        try{
 
+            Connection.Response response =
+                    Jsoup.connect("https://web.company.com/api/utoken")
+                            .userAgent("Mozilla/5.0")
+                            .timeout(10 * 1000)
+                            .method(Connection.Method.GET)
+                            .data("txtloginid", "YOUR_LOGINID")
+                            .data("txtloginpassword", "YOUR_PASSWORD")
+                            .data("random", "123342343")
+                            .data("task", "login")
+                            .data("destination", "/welcome")
+                            .followRedirects(true)
+                            .execute();
 
+            //parse the document from response
+            Document document = response.parse();
 
+            //get cookies
+            Map<String, String> mapCookies = response.cookies();
+
+            System.out.println(mapCookies);
+
+        }catch(IOException ioe){
+            System.out.println("Exception: " + ioe);
+        }
+        //TODO DISABLE SSL CERTIFICATE CHECKING
         return false;
     }
 }
