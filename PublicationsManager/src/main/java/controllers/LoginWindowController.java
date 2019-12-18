@@ -1,9 +1,7 @@
 package controllers;
 
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
 import javafx.stage.Stage;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -12,6 +10,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 public class LoginWindowController {
     @FXML
@@ -20,20 +20,42 @@ public class LoginWindowController {
     private PasswordField passwordField;
 
     public void login() {
-        Parent root;
-        try {
-            Stage newWindow = new Stage();
-            root = FXMLLoader.load(getClass().getClassLoader().getResource("fxml/MainWindow.fxml"));
-            newWindow.setScene(new Scene(root));
-            newWindow.setResizable(false);
-            newWindow.setTitle("Log in");
-            newWindow.show();
-
-            // Close login window
-            Stage currStage = (Stage) loginButton.getScene().getWindow();
-            currStage.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        boolean credentialsAreOk = false;
+        try{
+            credentialsAreOk = validateCredentials();
+        } catch (IOException e){
+            System.err.println("Error during the communication with a server.");
         }
+
+        if (credentialsAreOk) {
+            Parent root;
+            try {
+                Stage newWindow = new Stage();
+                root = FXMLLoader.load(getClass().getClassLoader().getResource("fxml/MainWindow.fxml"));
+                newWindow.setScene(new Scene(root));
+                newWindow.setResizable(false);
+                newWindow.setTitle("Log in");
+                newWindow.show();
+
+                // Close login window
+                Stage currStage = (Stage) loginButton.getScene().getWindow();
+                currStage.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            System.err.println("Credentials are incorrect.");
+        }
+
+    }
+
+    private boolean validateCredentials() throws IOException {
+        URL url = new URL("https://web.company.com/api/");
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        con.setRequestMethod("GET");
+
+
+
+        return false;
     }
 }
