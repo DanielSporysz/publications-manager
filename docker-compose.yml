@@ -10,8 +10,8 @@ services:
       - "443:443"
     volumes:
       - ./nginx-uwsgi.conf:/etc/nginx/nginx.conf
-      - ./SSL/newtestowy.key:/etc/nginx/server.company.com.key
-      - ./SSL/testowy.crt:/etc/nginx/server.company.com.crt
+      - ./SSL/web.key:/etc/nginx/web.key
+      - ./SSL/web.crt:/etc/nginx/web.crt
 
 
   web:
