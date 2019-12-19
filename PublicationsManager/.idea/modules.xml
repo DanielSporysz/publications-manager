@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/PublicationsManager.iml" filepath="$PROJECT_DIR$/PublicationsManager.iml" />
-      <module fileurl="file://$PROJECT_DIR$/maven/maven.iml" filepath="$PROJECT_DIR$/maven/maven.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/PublicationsManager.iml" filepath="$PROJECT_DIR$/.idea/PublicationsManager.iml" />
     </modules>
   </component>
 </project>

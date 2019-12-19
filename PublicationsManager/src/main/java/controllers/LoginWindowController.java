@@ -1,48 +1,55 @@
 package controllers;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
+import jdk.nashorn.internal.ir.ObjectNode;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
+import dataclasses.WEBCredentials;
 
 import java.io.IOException;
+import java.nio.charset.MalformedInputException;
 import java.util.Map;
 
 public class LoginWindowController {
     @FXML
     private Button loginButton;
+    @FXML
     private TextField loginField;
+    @FXML
     private PasswordField passwordField;
 
-    public void login() {
-        boolean credentialsAreOk = false;
-        try{
-            credentialsAreOk = validateCredentials();
-        } catch (IOException e){
-            System.err.println("Error during the communication with a server.");
-        }
+    private final String url = "https://web.company.com/api";
 
-        if (credentialsAreOk) {
-            Parent root;
+    public void login() {
+        String token = fetchToken();
+
+        if (token != null) {
             try {
+                FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("fxml/MainWindow.fxml"));
                 Stage newWindow = new Stage();
-                root = FXMLLoader.load(getClass().getClassLoader().getResource("fxml/MainWindow.fxml"));
-                newWindow.setScene(new Scene(root));
+                newWindow.setScene(new Scene((Pane)loader.load()));
                 newWindow.setResizable(false);
-                newWindow.setTitle("Log in");
+                newWindow.setTitle("Main Window");
                 newWindow.show();
+                MainWindowController controller = loader.getController();
+                WEBCredentials credentials = new WEBCredentials(loginField.getText(), passwordField.getText(), token);
+                controller.init(credentials);
 
                 // Close login window
                 Stage currStage = (Stage) loginButton.getScene().getWindow();
                 currStage.close();
             } catch (IOException e) {
+                // Error loading FXML
                 e.printStackTrace();
             }
         } else {
@@ -51,34 +58,32 @@ public class LoginWindowController {
 
     }
 
-    private boolean validateCredentials() throws IOException {
-        try{
-
+    private String fetchToken() {
+        try {
             Connection.Response response =
-                    Jsoup.connect("https://web.company.com/api/utoken")
+                    Jsoup.connect(url + "/utoken")
                             .userAgent("Mozilla/5.0")
                             .timeout(10 * 1000)
                             .method(Connection.Method.GET)
-                            .data("txtloginid", "YOUR_LOGINID")
+                            .data("login", "YOUR_LOGINID")
                             .data("txtloginpassword", "YOUR_PASSWORD")
-                            .data("random", "123342343")
-                            .data("task", "login")
-                            .data("destination", "/welcome")
                             .followRedirects(true)
+                            .ignoreContentType(true)
                             .execute();
 
-            //parse the document from response
-            Document document = response.parse();
-
-            //get cookies
-            Map<String, String> mapCookies = response.cookies();
-
-            System.out.println(mapCookies);
-
-        }catch(IOException ioe){
+            if (response.statusCode() == 201) {
+                ObjectMapper mapper = new ObjectMapper();
+                String json = response.body();
+                Map<String, String> map = mapper.readValue(json, Map.class);
+                return map.get("auth_token");
+            } else {
+                // incorrect credentials probably
+                return null;
+            }
+        } catch (IOException ioe) {
+            // Server error, response error
             System.out.println("Exception: " + ioe);
         }
-        //TODO DISABLE SSL CERTIFICATE CHECKING
-        return false;
+        return null;
     }
 }
