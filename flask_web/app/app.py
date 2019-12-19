@@ -145,12 +145,18 @@ Publications API
 
 @app.route('/api/utoken')
 def api0():
-    token = tokens_manager.create_user_token("danielek")
-    responseObject = {
-        'status': 'success',
-        'auth_token': token.decode()
-    }
-    return make_response(jsonify(responseObject)), 201
+    login = request.headers.get('login') or request.args.get('login')
+    given_password = request.headers.get('password') or request.args.get('password')
+
+    if usrs_manager.validate_credentials(login, given_password):
+        token = tokens_manager.create_user_token(login)
+        responseObject = {
+            'status': 'success',
+            'auth_token': token.decode()
+        }
+        return make_response(jsonify(responseObject)), 201
+    else:
+        return make_response("Incorrect credentials."), 401
 
 
 # TODO return list of user's publications

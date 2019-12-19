@@ -65,8 +65,8 @@ public class LoginWindowController {
                             .userAgent("Mozilla/5.0")
                             .timeout(10 * 1000)
                             .method(Connection.Method.GET)
-                            .data("login", "YOUR_LOGINID")
-                            .data("txtloginpassword", "YOUR_PASSWORD")
+                            .data("login", loginField.getText())
+                            .data("password", passwordField.getText())
                             .followRedirects(true)
                             .ignoreContentType(true)
                             .execute();
