@@ -151,7 +151,6 @@ def api0():
     if usrs_manager.validate_credentials(login, given_password):
         token = tokens_manager.create_user_token(login)
         responseObject = {
-            'status': 'success',
             'auth_token': token.decode()
         }
         return make_response(jsonify(responseObject)), 201

@@ -6,19 +6,20 @@ public class WEBCredentials {
     private String uToken;
 
     public WEBCredentials(String login, String password, String uToken) {
-        if(login == null){
-            login = "";
-        }
-        if(password == null){
-            password = "";
-        }
-        if(uToken == null){
-            uToken = "";
-        }
-
         this.login = login;
         this.password = password;
         this.uToken = uToken;
+
+        // For development purposes
+        if(this.login == null){
+            this.login = "";
+        }
+        if(this.password == null){
+            this.password = "";
+        }
+        if(this.uToken == null){
+            this.uToken = "";
+        }
     }
 
     public String getLogin() {
