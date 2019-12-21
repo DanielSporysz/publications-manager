@@ -29,7 +29,6 @@ public class APIConnector {
                 ObjectMapper mapper = new ObjectMapper();
                 String json = response.body();
                 Map<String, String> map = mapper.readValue(json, Map.class);
-                System.err.println(json);
                 return map.get("auth_token");
             } else {
                 throw new APIException("Server responded with unknown response.");

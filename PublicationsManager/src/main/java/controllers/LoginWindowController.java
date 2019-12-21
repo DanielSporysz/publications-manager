@@ -1,8 +1,8 @@
 package controllers;
 
 import api.APIConnector;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import api.APIException;
+
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
@@ -12,9 +12,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
-import org.jsoup.Connection;
-import org.jsoup.Jsoup;
 import dataclasses.WEBCredentials;
+import javafx.scene.image.Image;
 
 import java.io.IOException;
 
@@ -53,6 +52,7 @@ public class LoginWindowController {
                 newWindow.setScene(new Scene((Pane) loader.load()));
                 newWindow.setResizable(false);
                 newWindow.setTitle("Main Window");
+                newWindow.getIcons().add(new Image("/images/favicon.png"));
                 newWindow.show();
                 MainWindowController controller = loader.getController();
                 WEBCredentials credentials = new WEBCredentials(loginField.getText(), passwordField.getText(), token);
