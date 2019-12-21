@@ -53,11 +53,14 @@ public class LoginWindowController {
                 FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("fxml/MainWindow.fxml"));
                 Stage newWindow = new Stage();
                 newWindow.setScene(new Scene((Pane) loader.load()));
-                newWindow.setResizable(false);
+                newWindow.setMinHeight(512);
+                newWindow.setMinWidth(512);
                 newWindow.setTitle("Main Window");
                 newWindow.show();
-                MainWindowController controller = loader.getController();
+
+                // Pass data
                 WEBCredentials credentials = new WEBCredentials(loginField.getText(), passwordField.getText(), token);
+                MainWindowController controller = loader.getController();
                 controller.init(credentials);
 
                 // Close login window
