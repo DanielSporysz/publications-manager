@@ -122,10 +122,40 @@ def files(username):
     return jsonify(fnames)
 
 
-# TODO handle file deletion
-@app.route('/delete/<fid>')
+@app.route('/delete/<fid>', methods=['DELETE'])
 def delete(fid):
-    return "TODO handle file deletion", 200
+    # validation
+    if len(fid) == 0:
+        return '<h1>PDF</h1> Missing fid', 404
+
+    token = request.headers.get('token') or request.args.get('token')
+    if token is None:
+        return '<h1>PDF</h1> No token', 401
+    if not valid(token):
+        return '<h1>PDF</h1> Invalid token', 401
+    payload = decode(token, JWT_SECRET)
+
+    p_username = payload.get('username')
+    p_action = payload.get('action')
+    p_fid = payload.get('fid')
+    try:
+        if p_username is None or p_action is None:
+            raise Exception()
+        if p_action != "deleteFile":
+            raise Exception()
+        if p_fid is None or p_fid != fid:
+            raise Exception()
+    except:
+        return '<h1>PDF</h1> Incorrect token payload', 401
+
+    # Handling a file deletion
+    try:
+        cache.hdel(p_username, fid)
+        cache.delete(fid)
+        cache.bgsave()
+        return ('<h1>PDF</h1> File has been deleted.', 200)
+    except:
+        return ('<h1>PDF</h1> An error occured during the deletion of a file.', 500)
 
 
 def valid(token):

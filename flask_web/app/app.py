@@ -145,7 +145,7 @@ def redirect(location):
 Publications API
 '''
 
-@app.route('/api/auth-token')
+@app.route('/api/auth-token', methods=['GET'])
 def get_user_token():
     login = request.headers.get('login') or request.args.get('login')
     given_password = request.headers.get('password') or request.args.get('password')
@@ -159,7 +159,7 @@ def get_user_token():
     else:
         return make_response("Incorrect credentials."), 401
 
-@app.route('/api/file-list')
+@app.route('/api/file-list', methods=['GET'])
 def get_filelist():
     auth_token = request.headers.get('auth_token') or request.args.get('auth_token')
     if auth_token is None:
@@ -169,8 +169,12 @@ def get_filelist():
 
     payload = decode(auth_token, JWT_SECRET)
     username = payload.get('username')
+    try:
+        if username is None:
+            raise Exception()
+    except:
+        return '<h1>WEB</h1> Incorrect token', 401
     list_token = tokens_manager.create_getFileList_token(username)
-
     req = requests.get("http://pdf:5000/files/" +
                        username + "?token=" + list_token.decode())
 
@@ -190,43 +194,58 @@ def valid(token):
         return False
     return True
 
-# TODO return list of user's publications
-@app.route('/api/publications/list')
+@app.route('/api/pub-list', methods=['GET'])
 def api20():
     return "hello", 200
 
 
-# TODO receive and update publication
-@app.route('/api/publications/update')
+@app.route('/api/publications/put', methods=['PUT'])
 def api21():
     return "hello", 200
 
 
-# TODO receive and save new publication
-@app.route('/api/publications/new')
-def api22():
-    return "hello", 200
-
-
 # TODO handle publication deletion
-@app.route('/api/publications/delete')
+@app.route('/api/publications/delete', methods=['DELETE'])
 def api23():
     return "hello", 200
 
 
 # TODO handle file download
-@app.route('/api/publications/file/download')
+@app.route('/api/file/download', methods=['GET'])
 def api41():
     return "hello", 200
 
 
 # TODO handle file upload
-@app.route('/api/publications/file/upload')
+@app.route('/api/file/upload', methods=['PUT'])
 def api42():
     return "hello", 200
 
 
-# TODO handle file deletion
-@app.route('/api/publications/file/delete')
-def api43():
-    return "hello", 200
+@app.route('/api/file/delete', methods=['DELETE'])
+def delete_file():
+    auth_token = request.headers.get('auth_token') or request.args.get('auth_token')
+    fid = request.headers.get('fid') or request.args.get('fid')
+
+    if auth_token is None:
+        return '<h1>WEB</h1> No token', 401
+    if not valid(auth_token):
+        return '<h1>WEB</h1> Invalid token', 401
+    payload = decode(auth_token, JWT_SECRET)
+
+    username = payload.get('username')
+    if username is None:
+        return '<h1>WEB</h1> Incorrect token', 401
+    
+    if fid is None:
+        return '<h1>WEB</h1> Incorrect request. Missing fid.', 400
+        
+    deletion_token = tokens_manager.create_delete_token(username, fid)
+
+    req = requests.delete("http://pdf:5000/delete/" +
+                       fid + "?token=" + deletion_token.decode())
+
+    if req.status_code == 200:
+        return '<h1>WEB</h1> File has been deleted', 200
+    else:
+        return '<h1>WEB</h1> An error occurred during file deletion', 500
