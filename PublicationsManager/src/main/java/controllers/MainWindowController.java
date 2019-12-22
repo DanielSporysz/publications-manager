@@ -6,12 +6,14 @@ import dataclasses.WEBCredentials;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 
 import java.util.Map;
-
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MainWindowController {
     @FXML
@@ -20,9 +22,17 @@ public class MainWindowController {
     private ListView pubListView;
     @FXML
     private Label topGreeting;
+    @FXML
+    private Button deleteFileButton;
+    @FXML
+    private Button deletePubButton;
+    @FXML
+    private Button editPubButton;
 
     private WEBCredentials credentials;
     private Map<String, String> files;
+    private String currentlySelectedFileID;
+    private String currentlySelectedPubID;
 
     public void init(WEBCredentials credentials) {
         this.credentials = credentials;
@@ -53,7 +63,7 @@ public class MainWindowController {
 
         ObservableList<String> items = FXCollections.observableArrayList();
         for (Map.Entry<String, String> entry : files.entrySet()) {
-            items.add(entry.getValue() + "\t(" + entry.getKey() +")");
+            items.add(entry.getValue() + "\t(" + entry.getKey() + ")");
         }
         fileListView.setItems(items);
     }
@@ -64,8 +74,18 @@ public class MainWindowController {
     }
 
     @FXML
-    public void openFileDetails(MouseEvent e) {
-        System.out.println("clicked on " + fileListView.getSelectionModel().getSelectedItem());
+    public void selectFile(MouseEvent e) {
+        // After selecting a file, enable deletion button
+        deleteFileButton.setDisable(false);
+
+        //Extract file id from the text of ViewElement
+        Pattern pattern = Pattern.compile(".*\\(([^']*)\\).*");
+        Matcher matcher = pattern.matcher(fileListView.getSelectionModel().getSelectedItem().toString());
+        if(matcher.matches()) {
+            currentlySelectedFileID = matcher.group(1);
+        } else {
+            currentlySelectedFileID = null;
+        }
     }
 
 }
