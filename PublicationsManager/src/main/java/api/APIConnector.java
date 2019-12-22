@@ -5,6 +5,8 @@ import dataclasses.WEBCredentials;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -67,6 +69,28 @@ public class APIConnector {
             }
         } catch (IOException e) {
             e.printStackTrace();
+            // jsoup throws exception when server responds with 401 - failed log in
+            if (e.getMessage().equals("HTTP error fetching URL")) {
+                throw new APIException("Incorrect credentials.");
+            } else {
+                throw new APIException(e.getLocalizedMessage());
+            }
+        }
+    }
+
+    public void uploadFile(WEBCredentials credentials, File file) throws APIException{
+        try {
+            Connection.Response response =
+                    Jsoup.connect(url + "/file/upload")
+                            .userAgent("Mozilla")
+                            .timeout(10 * 1000)
+                            .method(Connection.Method.POST)
+                            .data("auth_token", credentials.getUToken())
+                            .data("file", file.getName(), new FileInputStream(file))
+                            .followRedirects(true)
+                            .ignoreContentType(true)
+                            .execute();
+        } catch (IOException e) {
             // jsoup throws exception when server responds with 401 - failed log in
             if (e.getMessage().equals("HTTP error fetching URL")) {
                 throw new APIException("Incorrect credentials.");

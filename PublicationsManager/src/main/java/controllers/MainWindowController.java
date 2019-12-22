@@ -11,7 +11,10 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.Label;
 import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.input.MouseEvent;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 
+import java.io.File;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -38,8 +41,11 @@ public class MainWindowController {
     private String currentlySelectedPubID;
     private int reconnectAttempts = 0;
 
-    public void init(WEBCredentials credentials) {
+    private Stage myStage;
+
+    public void init(WEBCredentials credentials, Stage stage) {
         this.credentials = credentials;
+        this.myStage = stage;
         topGreeting.setText("Welcome " + credentials.getLogin() + "!");
         refreshFileList();
         refreshPubList();
@@ -91,11 +97,11 @@ public class MainWindowController {
         currentlySelectedFileID = null;
 
         MultipleSelectionModel model = fileListView.getSelectionModel();
-        if (model == null){
+        if (model == null) {
             return;
         }
         Object item = model.getSelectedItem();
-        if (item==null){
+        if (item == null) {
             return;
         }
 
@@ -112,18 +118,45 @@ public class MainWindowController {
     }
 
     @FXML
-    public void uploadFile(){
+    public void uploadFile() {
+        FileChooser fileChooser = new FileChooser();
+        File selectedFile = fileChooser.showOpenDialog(myStage);
+        uploadFile(selectedFile);
+        refreshFileList();
+    }
+
+    private void uploadFile(File file) {
+        if (file != null) {
+            APIConnector connector = new APIConnector();
+            try {
+                connector.uploadFile(credentials, file);
+            } catch (APIException outerEx) {
+                if (outerEx.getMessage().equals("Incorrect credentials.")) {
+                    try {
+                        credentials.setUToken(connector.fetchAuthToken(credentials.getLogin(), credentials.getPassword()));
+                        if (reconnectAttempts == 0) {
+                            reconnectAttempts = 1;
+                            uploadFile(file);
+                            reconnectAttempts = 0;
+                        }
+                    } catch (APIException innerEx) {
+                        System.err.println("Error uploading a file.");
+                    }
+                } else {
+                    System.err.println("Error uploading a file.");
+                }
+            }
+        }
+    }
+
+    @FXML
+    public void downloadFile() {
         //TODO
     }
 
     @FXML
-    public void downloadFile(){
-        //TODO
-    }
-
-    @FXML
-    public void deleteFile(){
-        if (currentlySelectedFileID != null){
+    public void deleteFile() {
+        if (currentlySelectedFileID != null) {
             APIConnector connector = new APIConnector();
             try {
                 connector.deleteFile(credentials, currentlySelectedFileID);

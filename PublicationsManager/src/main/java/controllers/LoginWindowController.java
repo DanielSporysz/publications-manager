@@ -74,7 +74,7 @@ public class LoginWindowController {
                 // Pass data
                 WEBCredentials credentials = new WEBCredentials(loginField.getText(), passwordField.getText(), token);
                 MainWindowController controller = loader.getController();
-                controller.init(credentials);
+                controller.init(credentials, newWindow);
 
                 // Close login window
                 Stage currStage = (Stage) loginButton.getScene().getWindow();

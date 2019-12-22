@@ -216,10 +216,29 @@ def api41():
     return "hello", 200
 
 
-# TODO handle file upload
-@app.route('/api/file/upload', methods=['PUT'])
-def api42():
-    return "hello", 200
+@app.route('/api/file/upload', methods=['POST'])
+def upload_file():
+    auth_token = request.form["auth_token"]
+    f = request.files["file"]
+
+    if auth_token is None:
+        return '<h1>WEB</h1> No token', 401
+    if not valid(auth_token):
+        return '<h1>WEB</h1> Invalid token', 401
+    payload = decode(auth_token, JWT_SECRET)
+
+    username = payload.get('username')
+    if username is None:
+        return '<h1>WEB</h1> Incorrect token', 401
+
+    upload_token = tokens_manager.create_upload_token(username)
+
+    req = requests.post("http://pdf:5000/upload" +"?token=" + upload_token.decode() + "&fname=" + f.filename, files=[("file", f)])
+
+    if req.status_code == 200:
+        return '<h1>WEB</h1> File has been uploaded', 200
+    else:
+        return '<h1>WEB</h1> An error occurred during file uploading.', 500
 
 
 @app.route('/api/file/delete', methods=['DELETE'])

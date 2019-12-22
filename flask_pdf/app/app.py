@@ -54,9 +54,10 @@ def download(fid):
 
 @app.route('/upload', methods=['POST'])
 def upload():
-    f = request.files.get('file')
-    t = request.form.get('token')
-    c = request.form.get('callback')
+    f = request.files["file"]
+    t = request.headers.get('token') or request.args.get('token')
+    c = request.headers.get('callback') or request.args.get('callback')
+    fn = request.headers.get('fname') or request.args.get('fname')
 
     if f is None:
         return redirect(f"{c}?error=No+file+provided") if c \
@@ -82,7 +83,10 @@ def upload():
 
     try:
         cache.hset(p_username, fid, f.read())
-        cache.set(fid, f.filename)
+        if fn is None:
+            cache.set(fid, f.filename)
+        else:
+            cache.set(fid, fn)
         cache.bgsave()
         return redirect(f"{c}?filename={f.filename}&fid={fid}") if c \
             else (f'<h1>PDF</h1> Uploaded {f.filename} - {fid}', 200)
