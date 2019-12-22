@@ -9,6 +9,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Label;
+import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.input.MouseEvent;
 
 import java.util.Map;
@@ -24,6 +25,8 @@ public class MainWindowController {
     private Label topGreeting;
     @FXML
     private Button deleteFileButton;
+    @FXML
+    private Button downloadButton;
     @FXML
     private Button deletePubButton;
     @FXML
@@ -75,6 +78,7 @@ public class MainWindowController {
 
         // Force user to click on a file from a list before using delete option
         deleteFileButton.setDisable(true);
+        downloadButton.setDisable(true);
     }
 
     @FXML
@@ -84,22 +88,37 @@ public class MainWindowController {
 
     @FXML
     public void selectFile(MouseEvent e) {
-        // After selecting a file, enable deletion button
-        deleteFileButton.setDisable(false);
+        currentlySelectedFileID = null;
+
+        MultipleSelectionModel model = fileListView.getSelectionModel();
+        if (model == null){
+            return;
+        }
+        Object item = model.getSelectedItem();
+        if (item==null){
+            return;
+        }
 
         //Extract file id from the text of ViewElement
         Pattern pattern = Pattern.compile(".*\\(([^']*)\\).*");
-        Matcher matcher = pattern.matcher(fileListView.getSelectionModel().getSelectedItem().toString());
+        Matcher matcher = pattern.matcher(item.toString());
         if (matcher.matches()) {
             currentlySelectedFileID = matcher.group(1);
-        } else {
-            currentlySelectedFileID = null;
+
+            // After selecting a file, enable deletion button and download button
+            deleteFileButton.setDisable(false);
+            downloadButton.setDisable(false);
         }
     }
 
     @FXML
     public void uploadFile(){
+        //TODO
+    }
 
+    @FXML
+    public void downloadFile(){
+        //TODO
     }
 
     @FXML
