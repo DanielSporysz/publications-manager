@@ -5,7 +5,6 @@ import api.APIException;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
@@ -17,8 +16,6 @@ import dataclasses.WEBCredentials;
 import javafx.scene.image.Image;
 
 import java.io.IOException;
-import java.net.URL;
-import java.util.ResourceBundle;
 
 public class LoginWindowController {
     @FXML
@@ -42,7 +39,7 @@ public class LoginWindowController {
         String token;
         try {
             APIConnector connector = new APIConnector();
-            token = connector.fetchToken(loginField.getText(), passwordField.getText());
+            token = connector.fetchAuthToken(loginField.getText(), passwordField.getText());
         } catch (APIException e) {
             showErrorMessage(e.getMessage());
             return;
@@ -56,6 +53,7 @@ public class LoginWindowController {
                 newWindow.setMinHeight(512);
                 newWindow.setMinWidth(512);
                 newWindow.setTitle("Main Window");
+                newWindow.getIcons().add(new Image("/images/favicon.png"));
                 newWindow.show();
 
                 // Pass data

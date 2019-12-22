@@ -16,11 +16,13 @@
             <Font name="System Bold" size="12.0" />
          </font></Label>
       <Label layoutX="137.0" layoutY="131.0" text="l test" />
-      <ListView fx:id="fileList" layoutX="27.0" layoutY="73.0" maxHeight="-Infinity" minHeight="-Infinity" onMouseClicked="#openFileDetails" prefHeight="140.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="110.0" />
+      <ListView fx:id="fileListView" layoutX="27.0" layoutY="73.0" maxHeight="-Infinity" minHeight="-Infinity" onMouseClicked="#openFileDetails" prefHeight="140.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="110.0" />
       <Label layoutX="76.0" layoutY="239.0" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="25.0" text="List of your files:" AnchorPane.leftAnchor="40.0" AnchorPane.topAnchor="75.0" />
       <Label layoutX="40.0" layoutY="250.0" text="List of your publications:" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="300.0" />
-      <ListView fx:id="pubList" layoutX="40.0" layoutY="351.0" maxHeight="-Infinity" minHeight="-Infinity" minWidth="100.0" prefHeight="140.0" prefWidth="200.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="335.0" />
+      <ListView fx:id="pubListView" layoutX="40.0" layoutY="351.0" maxHeight="-Infinity" minHeight="-Infinity" minWidth="100.0" prefHeight="140.0" prefWidth="200.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="335.0" />
       <Button fx:id="uploadFileButton" layoutX="932.0" layoutY="88.0" maxHeight="-Infinity" minHeight="-Infinity" mnemonicParsing="false" prefHeight="25.0" text="Upload a new file" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="75.0" />
       <Button layoutX="848.0" layoutY="317.0" mnemonicParsing="false" text="Add a new publication" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="300.0" />
+      <Button fx:id="refreshFileListButton" layoutX="823.0" layoutY="75.0" mnemonicParsing="false" onMouseClicked="#refreshFileList" text="Refresh list of files" AnchorPane.rightAnchor="160.0" AnchorPane.topAnchor="75.0" />
+      <Button fx:id="refreshPubListButton" layoutX="790.0" layoutY="300.0" mnemonicParsing="false" onMouseClicked="#refreshPubList" text="Refresh list of publications" AnchorPane.rightAnchor="190.0" AnchorPane.topAnchor="300.0" />
    </children>
 </AnchorPane>

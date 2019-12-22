@@ -83,6 +83,7 @@ def upload():
     try:
         cache.hset(p_username, fid, f.read())
         cache.set(fid, f.filename)
+        cache.bgsave()
         return redirect(f"{c}?filename={f.filename}&fid={fid}") if c \
             else (f'<h1>PDF</h1> Uploaded {f.filename} - {fid}', 200)
     except:

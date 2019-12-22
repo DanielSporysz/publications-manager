@@ -38,4 +38,12 @@ public class WEBCredentials {
         this.password = password;
     }
 
+    public String getUToken() {
+        return uToken;
+    }
+
+    public void setUToken(String uToken) {
+        this.uToken = uToken;
+    }
+
 }

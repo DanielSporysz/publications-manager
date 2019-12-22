@@ -10,6 +10,8 @@ import rsessions
 import tokenscrt
 from dotenv import load_dotenv
 from os import getenv
+import sys
+from jwt import decode, InvalidTokenError
 
 app = Flask(__name__)
 
@@ -143,8 +145,8 @@ def redirect(location):
 Publications API
 '''
 
-@app.route('/api/utoken')
-def api0():
+@app.route('/api/auth-token')
+def get_user_token():
     login = request.headers.get('login') or request.args.get('login')
     given_password = request.headers.get('password') or request.args.get('password')
 
@@ -157,6 +159,36 @@ def api0():
     else:
         return make_response("Incorrect credentials."), 401
 
+@app.route('/api/file-list')
+def get_filelist():
+    auth_token = request.headers.get('auth_token') or request.args.get('auth_token')
+    if auth_token is None:
+        return '<h1>WEB</h1> No token', 401
+    if not valid(auth_token):
+        return '<h1>WEB</h1> Invalid token', 401
+
+    payload = decode(auth_token, JWT_SECRET)
+    username = payload.get('username')
+    list_token = tokens_manager.create_getFileList_token(username)
+
+    req = requests.get("http://pdf:5000/files/" +
+                       username + "?token=" + list_token.decode())
+
+    responseObject = {}
+    if req.status_code == 200:
+        payload = req.json()
+        for fid in payload.keys():
+            responseObject[fid] = payload[fid]
+
+    return make_response(jsonify(responseObject)), 201
+
+def valid(token):
+    try:
+        decode(token, JWT_SECRET)
+    except InvalidTokenError as e:
+        print(str(e), file=sys.stderr)
+        return False
+    return True
 
 # TODO return list of user's publications
 @app.route('/api/publications/list')
