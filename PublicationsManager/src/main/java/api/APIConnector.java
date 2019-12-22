@@ -75,4 +75,26 @@ public class APIConnector {
             }
         }
     }
+
+    public void deleteFile(WEBCredentials credentials, String fid) throws APIException{
+        try {
+            Connection.Response response =
+                    Jsoup.connect(url + "/file/delete")
+                            .userAgent("Mozilla")
+                            .timeout(10 * 1000)
+                            .method(Connection.Method.DELETE)
+                            .data("auth_token", credentials.getUToken())
+                            .data("fid", fid)
+                            .followRedirects(true)
+                            .ignoreContentType(true)
+                            .execute();
+        } catch (IOException e) {
+            // jsoup throws exception when server responds with 401 - failed log in
+            if (e.getMessage().equals("HTTP error fetching URL")) {
+                throw new APIException("Incorrect credentials.");
+            } else {
+                throw new APIException(e.getLocalizedMessage());
+            }
+        }
+    }
 }

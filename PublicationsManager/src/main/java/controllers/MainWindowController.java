@@ -33,6 +33,7 @@ public class MainWindowController {
     private Map<String, String> files;
     private String currentlySelectedFileID;
     private String currentlySelectedPubID;
+    private int reconnectAttempts = 0;
 
     public void init(WEBCredentials credentials) {
         this.credentials = credentials;
@@ -47,24 +48,28 @@ public class MainWindowController {
         try {
             files = connector.fetchFileList(credentials);
         } catch (APIException outerEx) {
-            try {
-                if (outerEx.getMessage().equals("Incorrect credentials.")) { // Fetch a new auth_token and try again
+            // Fetch a new auth_token and try again
+            if (outerEx.getMessage().equals("Incorrect credentials.")) {
+                try {
                     credentials.setUToken(connector.fetchAuthToken(credentials.getLogin(), credentials.getPassword()));
-                    refreshFileList();
-                } else {
-                    System.err.println("Token has expired. Trying fetching and using a new one.");
-                    outerEx.getMessage();
+                    if (reconnectAttempts == 0) {
+                        reconnectAttempts = 1;
+                        refreshFileList();
+                        reconnectAttempts = 0;
+                    }
+                } catch (APIException innerEx) {
+                    System.err.println("Error fetching a list of files.");
+                    return;
                 }
-                return;
-            } catch (APIException innerEx) {
-                innerEx.getMessage();
+            } else {
+                System.err.println("Error fetching a list of files.");
                 return;
             }
         }
 
         ObservableList<String> items = FXCollections.observableArrayList();
         for (Map.Entry<String, String> entry : files.entrySet()) {
-            items.add(entry.getValue() + "\t(" + entry.getKey() + ")");
+            items.add(entry.getValue() + " (" + entry.getKey() + ")");
         }
         fileListView.setItems(items);
 
@@ -85,11 +90,44 @@ public class MainWindowController {
         //Extract file id from the text of ViewElement
         Pattern pattern = Pattern.compile(".*\\(([^']*)\\).*");
         Matcher matcher = pattern.matcher(fileListView.getSelectionModel().getSelectedItem().toString());
-        if(matcher.matches()) {
+        if (matcher.matches()) {
             currentlySelectedFileID = matcher.group(1);
         } else {
             currentlySelectedFileID = null;
         }
+    }
+
+    @FXML
+    public void uploadFile(){
+
+    }
+
+    @FXML
+    public void deleteFile(){
+        if (currentlySelectedFileID != null){
+            APIConnector connector = new APIConnector();
+            try {
+                connector.deleteFile(credentials, currentlySelectedFileID);
+            } catch (APIException outerEx) {
+                if (outerEx.getMessage().equals("Incorrect credentials.")) {
+                    try {
+                        credentials.setUToken(connector.fetchAuthToken(credentials.getLogin(), credentials.getPassword()));
+                        if (reconnectAttempts == 0) {
+                            reconnectAttempts = 1;
+                            deleteFile();
+                            reconnectAttempts = 0;
+                        }
+                    } catch (APIException innerEx) {
+                        System.err.println("Error fetching a list of files.");
+                        return;
+                    }
+                } else {
+                    System.err.println("Error fetching a list of files.");
+                    return;
+                }
+            }
+        }
+        refreshFileList();
     }
 
 }

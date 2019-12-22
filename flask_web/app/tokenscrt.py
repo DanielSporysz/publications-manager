@@ -46,3 +46,14 @@ class TokenCreator:
             "username": username
         }
         return encode(payload, self.jwt_secret, "HS256")
+
+    def create_delete_token(self, username, fid):
+        exp = datetime.datetime.utcnow() + datetime.timedelta(seconds=self.jwt_session_time)
+        payload = {
+            "iss": "web.company.com",
+            "exp": exp,
+            "username": username,
+            "fid": fid,
+            "action": "deleteFile"
+        }
+        return encode(payload, self.jwt_secret, "HS256")
