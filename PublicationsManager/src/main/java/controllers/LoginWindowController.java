@@ -6,6 +6,8 @@ import api.APIException;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
@@ -35,6 +37,19 @@ public class LoginWindowController {
         errorLabel.setText(message);
     }
 
+    @FXML
+    public void handleOnKeyPressed(KeyEvent ke)
+    {
+        clearErrorMessage();
+
+        // Handle Enter press
+        if (ke.getCode().equals(KeyCode.ENTER))
+        {
+            login();
+        }
+    }
+
+    @FXML
     public void login() {
         String token;
         try {

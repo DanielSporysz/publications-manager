@@ -46,17 +46,18 @@ public class MainWindowController {
         APIConnector connector = new APIConnector();
         try {
             files = connector.fetchFileList(credentials);
-        } catch (APIException e) {
+        } catch (APIException outerEx) {
             try {
-                if (e.getMessage().equals("Incorrect credentials.")) { // Fetch a new auth_token and try again
+                if (outerEx.getMessage().equals("Incorrect credentials.")) { // Fetch a new auth_token and try again
                     credentials.setUToken(connector.fetchAuthToken(credentials.getLogin(), credentials.getPassword()));
                     refreshFileList();
                 } else {
-                    e.printStackTrace();
+                    System.err.println("Token has expired. Trying fetching and using a new one.");
+                    outerEx.getMessage();
                 }
                 return;
-            } catch (APIException ex) {
-                ex.printStackTrace();
+            } catch (APIException innerEx) {
+                innerEx.getMessage();
                 return;
             }
         }
@@ -66,6 +67,9 @@ public class MainWindowController {
             items.add(entry.getValue() + "\t(" + entry.getKey() + ")");
         }
         fileListView.setItems(items);
+
+        // Force user to click on a file from a list before using delete option
+        deleteFileButton.setDisable(true);
     }
 
     @FXML
