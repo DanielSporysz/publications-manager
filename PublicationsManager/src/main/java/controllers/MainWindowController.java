@@ -6,10 +6,14 @@ import dataclasses.WEBCredentials;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.*;
@@ -35,9 +39,9 @@ public class MainWindowController {
 
     private WEBCredentials credentials;
     private Map<String, String> files;
+    private Map<String, String> publications;
     private String currentlySelectedFileID;
     private String currentlySelectedPubID;
-    private int reconnectAttempts = 0;
 
     private Stage myStage;
 
@@ -223,10 +227,79 @@ public class MainWindowController {
 
     @FXML
     public void refreshPubList() {
-        //TODO
+        publications = null;
+        APIConnector connector = new APIConnector();
+        int requestAttempts = 1;
+        while (requestAttempts >= 0) {
+            try {
+                publications = connector.fetchPubList(credentials);
+                break;
+            } catch (APIException e) {
+                //e.printStackTrace();
+                requestAttempts--;
+                try {
+                    credentials.setUToken(connector.fetchAuthToken(credentials.getLogin(), credentials.getPassword()));
+                } catch (APIException ex) {
+                    ex.printStackTrace();
+                    break;
+                }
+            }
+        }
 
+        // Add the file list to the view
+        ObservableList<String> items = FXCollections.observableArrayList();
+        if (publications != null) {
+            for (Map.Entry<String, String> entry : publications.entrySet()) {
+                items.add(entry.getKey());
+            }
+        }
+        pubListView.setItems(items);
+
+        // Force user to click on a file from the list before using any options
         deletePubButton.setDisable(true);
         editPubButton.setDisable(true);
+    }
+
+    @FXML
+    public void openPublicationCreationWindow(){
+        FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("fxml/NewPublicationWindow.fxml"));
+        Stage newWindow = new Stage();
+        try {
+            newWindow.setScene(new Scene((Pane) loader.load()));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+        newWindow.setMinHeight(400);
+        newWindow.setMinWidth(512);
+        newWindow.setTitle("Creating a new publication");
+        newWindow.getIcons().add(new Image("/images/favicon.png"));
+        newWindow.initModality(Modality.WINDOW_MODAL);
+        newWindow.initOwner(myStage.getScene().getWindow());
+        newWindow.show();
+
+        // Pass data
+        NewPublicationWindowController controller = loader.getController();
+        controller.init(newWindow, files, credentials, this);
+    }
+
+    @FXML
+    public void selectPublication(MouseEvent e) {
+        currentlySelectedPubID = null;
+
+        MultipleSelectionModel model = pubListView.getSelectionModel();
+        if (model == null) {
+            return;
+        }
+        Object item = model.getSelectedItem();
+        if (item == null) {
+            return;
+        }
+
+        currentlySelectedPubID = item.toString();
+
+        deletePubButton.setDisable(false);
+        editPubButton.setDisable(false);
     }
 
 }

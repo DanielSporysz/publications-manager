@@ -38,7 +38,7 @@ class TokenCreator:
         }
         return encode(payload, self.jwt_secret, "HS256")
 
-    def create_user_token(self, username):
+    def create_auth_token(self, username):
         exp = datetime.datetime.utcnow() + datetime.timedelta(seconds=self.jwt_session_time)
         payload = {
             "iss": "web.company.com",

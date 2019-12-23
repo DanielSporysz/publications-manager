@@ -1,5 +1,6 @@
 package api;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dataclasses.WEBCredentials;
 import org.jsoup.Connection;
@@ -88,14 +89,7 @@ public class APIConnector {
                             .ignoreContentType(true)
                             .execute();
 
-            if (response.statusCode() == 201) {
-                ObjectMapper mapper = new ObjectMapper();
-                String json = response.body();
-                Map<String, String> map = mapper.readValue(json, Map.class);
-                return map;
-            } else {
-                throw new APIException("Server responded with unknown response.");
-            }
+            return getMapFromResponse(response);
         } catch (IOException e) {
             // jsoup throws exception when server responds with 401 - failed log in
             if (e.getMessage().equals("HTTP error fetching URL")) {
@@ -137,6 +131,70 @@ public class APIConnector {
                             .method(Connection.Method.DELETE)
                             .data("auth_token", credentials.getUToken())
                             .data("fid", fid)
+                            .followRedirects(true)
+                            .ignoreContentType(true)
+                            .execute();
+        } catch (IOException e) {
+            // jsoup throws exception when server responds with 401 - failed log in
+            if (e.getMessage().equals("HTTP error fetching URL")) {
+                throw new APIException("Incorrect credentials.");
+            } else {
+                throw new APIException(e.getLocalizedMessage());
+            }
+        }
+    }
+
+    public Map<String, String> fetchPubList(WEBCredentials credentials) throws APIException {
+        try {
+            Connection.Response response =
+                    Jsoup.connect(url + "/pub-list")
+                            .userAgent("Mozilla")
+                            .timeout(10 * 1000)
+                            .method(Connection.Method.GET)
+                            .data("auth_token", credentials.getUToken())
+                            .followRedirects(true)
+                            .ignoreContentType(true)
+                            .execute();
+
+            return getMapFromResponse(response);
+        } catch (IOException e) {
+            // jsoup throws exception when server responds with 401 - failed log in
+            if (e.getMessage().equals("HTTP error fetching URL")) {
+                throw new APIException("Incorrect credentials.");
+            } else {
+                throw new APIException(e.getLocalizedMessage());
+            }
+        }
+    }
+
+    private Map<String, String> getMapFromResponse(Connection.Response response) throws JsonProcessingException, APIException {
+        if (response.statusCode() == 201) {
+            ObjectMapper mapper = new ObjectMapper();
+            String json = response.body();
+            Map<String, String> map = mapper.readValue(json, Map.class);
+            return map;
+        } else {
+            throw new APIException("Server responded with unknown response.");
+        }
+    }
+
+    public void createPublication(WEBCredentials credentials, Map<String, String> publication) throws APIException{
+        String json;
+        try {
+            json = new ObjectMapper().writeValueAsString(publication);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        try {
+            Connection.Response response =
+                    Jsoup.connect(url + "/new-pub")
+                            .userAgent("Mozilla")
+                            .timeout(10 * 1000)
+                            .method(Connection.Method.POST)
+                            .data("auth_token", credentials.getUToken())
+                            .data("publication", json)
                             .followRedirects(true)
                             .ignoreContentType(true)
                             .execute();

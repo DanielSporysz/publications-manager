@@ -87,7 +87,7 @@ def upload():
             cache.set(fid, f.filename)
         else:
             cache.set(fid, fn)
-        cache.bgsave()
+            #cache.bgsave()
         return redirect(f"{c}?filename={f.filename}&fid={fid}") if c \
             else (f'<h1>PDF</h1> Uploaded {f.filename} - {fid}', 200)
     except:
@@ -156,7 +156,6 @@ def delete(fid):
     try:
         cache.hdel(p_username, fid)
         cache.delete(fid)
-        cache.bgsave()
         return ('<h1>PDF</h1> File has been deleted.', 200)
     except:
         return ('<h1>PDF</h1> An error occured during the deletion of a file.', 500)

@@ -4,6 +4,8 @@ from flask import make_response
 from flask import render_template
 from flask import jsonify
 from flask import redirect
+from uuid import uuid4
+import json
 import requests
 import redis
 import rusers
@@ -148,13 +150,13 @@ Publications API
 
 
 @app.route('/api/auth-token', methods=['GET'])
-def get_user_token():
+def get_auth_token():
     login = request.headers.get('login') or request.args.get('login')
     given_password = request.headers.get(
         'password') or request.args.get('password')
 
     if usrs_manager.validate_credentials(login, given_password):
-        token = tokens_manager.create_user_token(login)
+        token = tokens_manager.create_auth_token(login)
         responseObject = {
             'auth_token': token.decode()
         }
@@ -201,18 +203,64 @@ def valid(token):
 
 
 @app.route('/api/pub-list', methods=['GET'])
-def api20():
+def get_publist():
+    auth_token = request.headers.get(
+        'auth_token') or request.args.get('auth_token')
+    if auth_token is None:
+        return '<h1>WEB</h1> No token', 401
+    if not valid(auth_token):
+        return '<h1>WEB</h1> Invalid token', 401
+    payload = decode(auth_token, JWT_SECRET)
+
+    username = payload.get('username')
+    if username is None:
+        return '<h1>WEB</h1> Incorrect token', 401
+
+    pubs = {}
+    pub_ids = cache.hkeys(username)
+    if pub_ids is not None:
+        for pid in pub_ids:
+            pubs[pid.decode()] = cache.hget(username, pid.decode()).decode()
+
+    return make_response(jsonify(pubs)), 201
+
+@app.route('/api/new-pub', methods=['POST'])
+def create_pub():
+    auth_token = request.form["auth_token"]
+    str_pub = request.form["publication"]
+
+    if auth_token is None:
+        return '<h1>WEB</h1> No token', 401
+    if not valid(auth_token):
+        return '<h1>WEB</h1> Invalid token', 401
+    payload = decode(auth_token, JWT_SECRET)
+
+    username = payload.get('username')
+    if username is None:
+        return '<h1>WEB</h1> Incorrect token', 401
+
+    # saving a publication
+    try:
+        pid = str(uuid4())
+        # Recreate publication to remove any extra fields
+        json_pub = json.loads(str_pub)
+        pub = {"id": pid, "title": json_pub["title"], "authors": json_pub["authors"], "year": json_pub["year"],
+               "publisher": json_pub["publisher"], "files": json_pub["files"]}
+        cache.hset(username, pid, json.dumps(pub))
+
+        return '<h1>WEB</h1> Publication has been posted.', 201
+    except:
+        return '<h1>WEB</h1> Error during posting a publication.', 500
+
+
+# TODO handle publication update
+@app.route('/api/update-pub', methods=['PUT'])
+def update_pub():
     return "hello", 200
-
-
-@app.route('/api/publications/put', methods=['PUT'])
-def api21():
-    return "hello", 200
-
 
 # TODO handle publication deletion
-@app.route('/api/publications/delete', methods=['DELETE'])
-def api23():
+@app.route('/api/del-pub', methods=['DELETE'])
+def delete_pub():
     return "hello", 200
 
 
