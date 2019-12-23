@@ -6,15 +6,13 @@ import dataclasses.WEBCredentials;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.ListView;
-import javafx.scene.control.Label;
-import javafx.scene.control.MultipleSelectionModel;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
-import java.io.File;
+import java.io.*;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -88,14 +86,6 @@ public class MainWindowController {
     }
 
     @FXML
-    public void refreshPubList() {
-        //TODO
-
-        deletePubButton.setDisable(true);
-        editPubButton.setDisable(true);
-    }
-
-    @FXML
     public void selectFile(MouseEvent e) {
         currentlySelectedFileID = null;
 
@@ -121,14 +111,9 @@ public class MainWindowController {
     }
 
     @FXML
-    public void openFileChooserToUpload() {
+    public void uploadFile() {
         FileChooser fileChooser = new FileChooser();
-        File selectedFile = fileChooser.showOpenDialog(myStage);
-        uploadFile(selectedFile);
-        refreshFileList();
-    }
-
-    private void uploadFile(File file) {
+        File file = fileChooser.showOpenDialog(myStage);
         if (file == null) {
             return;
         }
@@ -150,16 +135,70 @@ public class MainWindowController {
                 }
             }
         }
+
+        refreshFileList();
     }
 
     @FXML
     public void downloadFile() {
-        //TODO
+        FileChooser fileChooser = new FileChooser();
+        File file = fileChooser.showSaveDialog(myStage);
+        if (file == null) {
+            return;
+        }
+
+        APIConnector connector = new APIConnector();
+        int requestAttempts = 1;
+        while (requestAttempts >= 0) {
+            try {
+                BufferedInputStream inputStream = connector.downloadFile(credentials, currentlySelectedFileID);
+                try {
+                    FileOutputStream fos = new FileOutputStream(file);
+                    byte[] buffer = new byte[1024];
+                    int len;
+                    while ((len = inputStream.read(buffer)) != -1) {
+                        fos.write(buffer, 0, len);
+                    }
+                    inputStream.close();
+                    fos.close();
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                break;
+            } catch (APIException e) {
+                //e.printStackTrace();
+                requestAttempts--;
+                try {
+                    credentials.setUToken(connector.fetchAuthToken(credentials.getLogin(), credentials.getPassword()));
+                } catch (APIException ex) {
+                    ex.printStackTrace();
+                    break;
+                }
+            }
+        }
     }
 
     @FXML
     public void deleteFile() {
         if (currentlySelectedFileID != null) {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Delete " + currentlySelectedFileID + " ?", ButtonType.NO, ButtonType.YES);
+            Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+            stage.getIcons().add(new Image("/images/favicon.png"));
+
+            //Deactivate Defaultbehavior for yes-Button:
+            Button yesButton = (Button) alert.getDialogPane().lookupButton( ButtonType.YES );
+            yesButton.setDefaultButton( false );
+            //Activate Defaultbehavior for no-Button:
+            Button noButton = (Button) alert.getDialogPane().lookupButton( ButtonType.NO );
+            noButton.setDefaultButton( true );
+
+            alert.showAndWait();
+            if (alert.getResult() != ButtonType.YES) {
+                return;
+            }
+
             APIConnector connector = new APIConnector();
             int requestAttempts = 1;
             while (requestAttempts >= 0) {
@@ -180,6 +219,14 @@ public class MainWindowController {
         }
 
         refreshFileList();
+    }
+
+    @FXML
+    public void refreshPubList() {
+        //TODO
+
+        deletePubButton.setDisable(true);
+        editPubButton.setDisable(true);
     }
 
 }

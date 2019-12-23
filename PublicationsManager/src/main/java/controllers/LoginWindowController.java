@@ -49,6 +49,10 @@ public class LoginWindowController {
         }
     }
 
+    public void requestFocusOnLoginField(){
+        loginField.requestFocus();
+    }
+
     @FXML
     public void login() {
         String token;

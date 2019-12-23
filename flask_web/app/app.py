@@ -3,6 +3,7 @@ from flask import request
 from flask import make_response
 from flask import render_template
 from flask import jsonify
+from flask import redirect
 import requests
 import redis
 import rusers
@@ -34,9 +35,9 @@ tokens_manager = tokenscrt.TokenCreator(JWT_SESSION_TIME, JWT_SECRET)
 def index():
     session_id = request.cookies.get('session_id')
     if session_id is not None and sessions_manager.validate_session(session_id):
-        return redirect("/welcome")
+        return my_redirect("/welcome")
     else:
-        return redirect("/login")
+        return my_redirect("/login")
 
 
 @app.route('/login')
@@ -77,7 +78,7 @@ def welcome():
         return render_template("welcome.html", package=zip_of_file_list,
                                upload_token=upload_token, PDF=PDF, WEB=WEB, username=username.decode())
     else:
-        return redirect("/login")
+        return my_redirect("/login")
 
 
 def get_zip_of_file_list(username, list_token):
@@ -106,7 +107,7 @@ def logout():
     if session_id is not None:
         sessions_manager.delete_session(session_id)
 
-    response = redirect("/login")
+    response = my_redirect("/login")
     response.set_cookie("session_id", "INVALIDATE", max_age=INVALIDATE)
     return response
 
@@ -115,7 +116,7 @@ def logout():
 def uploaded():
     session_id = request.cookies.get('session_id')
     if not session_id or not sessions_manager.validate_session(session_id):
-        return redirect("/login")
+        return my_redirect("/login")
 
     fname = request.args.get('filename')
     fid = request.args.get('fid')
@@ -133,7 +134,7 @@ def uploaded():
     return render_template("callback.html", msg=msg, username=username)
 
 
-def redirect(location):
+def my_redirect(location):
     response = make_response('', 303)
     response.headers["Location"] = location
     return response
@@ -215,10 +216,24 @@ def api23():
     return "hello", 200
 
 
-# TODO handle file download
 @app.route('/api/file/download', methods=['GET'])
-def api41():
-    return "hello", 200
+def download_file():
+    auth_token = request.headers.get(
+        'auth_token') or request.args.get('auth_token')
+    fid = request.headers.get('fid') or request.args.get('fid')
+
+    if auth_token is None:
+        return '<h1>WEB</h1> No token', 401
+    if not valid(auth_token):
+        return '<h1>WEB</h1> Invalid token', 401
+    payload = decode(auth_token, JWT_SECRET)
+
+    username = payload.get('username')
+    if username is None:
+        return '<h1>WEB</h1> Incorrect token', 401
+    download_token = tokens_manager.create_download_token(username, fid)
+
+    return redirect("https://web.company.com/download/" + fid + "?token=" + download_token.decode(), code=302)
 
 
 @app.route('/api/file/upload', methods=['POST'])

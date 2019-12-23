@@ -5,10 +5,10 @@ import dataclasses.WEBCredentials;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
 public class APIConnector {
@@ -47,6 +47,35 @@ public class APIConnector {
         }
     }
 
+    public BufferedInputStream downloadFile(WEBCredentials credentials, String fid) throws APIException{
+        try {
+            Connection.Response response =
+                    Jsoup.connect(url + "/file-list")
+                            .userAgent("Mozilla")
+                            .timeout(10 * 1000)
+                            .method(Connection.Method.GET)
+                            .data("auth_token", credentials.getUToken())
+                            .data("fid", fid)
+                            .followRedirects(true)
+                            .ignoreContentType(true)
+                            .maxBodySize(0)
+                            .execute();
+
+            if (response.statusCode() == 201){
+                return response.bodyStream();
+            } else {
+                throw new APIException("Server responded with unknown response.");
+            }
+        } catch (IOException e) {
+            // jsoup throws exception when server responds with 401 - failed log in
+            if (e.getMessage().equals("HTTP error fetching URL")) {
+                throw new APIException("Incorrect credentials.");
+            } else {
+                throw new APIException(e.getLocalizedMessage());
+            }
+        }
+    }
+
     public Map<String, String> fetchFileList(WEBCredentials credentials) throws APIException {
         try {
             Connection.Response response =
@@ -68,7 +97,6 @@ public class APIConnector {
                 throw new APIException("Server responded with unknown response.");
             }
         } catch (IOException e) {
-            e.printStackTrace();
             // jsoup throws exception when server responds with 401 - failed log in
             if (e.getMessage().equals("HTTP error fetching URL")) {
                 throw new APIException("Incorrect credentials.");
