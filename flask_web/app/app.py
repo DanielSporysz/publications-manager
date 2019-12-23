@@ -145,10 +145,12 @@ def redirect(location):
 Publications API
 '''
 
+
 @app.route('/api/auth-token', methods=['GET'])
 def get_user_token():
     login = request.headers.get('login') or request.args.get('login')
-    given_password = request.headers.get('password') or request.args.get('password')
+    given_password = request.headers.get(
+        'password') or request.args.get('password')
 
     if usrs_manager.validate_credentials(login, given_password):
         token = tokens_manager.create_user_token(login)
@@ -159,32 +161,34 @@ def get_user_token():
     else:
         return make_response("Incorrect credentials."), 401
 
+
 @app.route('/api/file-list', methods=['GET'])
 def get_filelist():
-    auth_token = request.headers.get('auth_token') or request.args.get('auth_token')
+    auth_token = request.headers.get(
+        'auth_token') or request.args.get('auth_token')
     if auth_token is None:
         return '<h1>WEB</h1> No token', 401
     if not valid(auth_token):
         return '<h1>WEB</h1> Invalid token', 401
-
     payload = decode(auth_token, JWT_SECRET)
+
     username = payload.get('username')
-    try:
-        if username is None:
-            raise Exception()
-    except:
+    if username is None:
         return '<h1>WEB</h1> Incorrect token', 401
     list_token = tokens_manager.create_getFileList_token(username)
+
     req = requests.get("http://pdf:5000/files/" +
                        username + "?token=" + list_token.decode())
 
-    responseObject = {}
     if req.status_code == 200:
+        responseObject = {}
         payload = req.json()
         for fid in payload.keys():
             responseObject[fid] = payload[fid]
+        return make_response(jsonify(responseObject)), 201
+    else:
+        return '<h1>WEB</h1> Error returning list of files.', 500
 
-    return make_response(jsonify(responseObject)), 201
 
 def valid(token):
     try:
@@ -193,6 +197,7 @@ def valid(token):
         print(str(e), file=sys.stderr)
         return False
     return True
+
 
 @app.route('/api/pub-list', methods=['GET'])
 def api20():
@@ -230,10 +235,10 @@ def upload_file():
     username = payload.get('username')
     if username is None:
         return '<h1>WEB</h1> Incorrect token', 401
-
     upload_token = tokens_manager.create_upload_token(username)
 
-    req = requests.post("http://pdf:5000/upload" +"?token=" + upload_token.decode() + "&fname=" + f.filename, files=[("file", f)])
+    req = requests.post("http://pdf:5000/upload" + "?token=" +
+                        upload_token.decode() + "&fname=" + f.filename, files=[("file", f)])
 
     if req.status_code == 200:
         return '<h1>WEB</h1> File has been uploaded', 200
@@ -243,7 +248,8 @@ def upload_file():
 
 @app.route('/api/file/delete', methods=['DELETE'])
 def delete_file():
-    auth_token = request.headers.get('auth_token') or request.args.get('auth_token')
+    auth_token = request.headers.get(
+        'auth_token') or request.args.get('auth_token')
     fid = request.headers.get('fid') or request.args.get('fid')
 
     if auth_token is None:
@@ -255,14 +261,13 @@ def delete_file():
     username = payload.get('username')
     if username is None:
         return '<h1>WEB</h1> Incorrect token', 401
-    
     if fid is None:
         return '<h1>WEB</h1> Incorrect request. Missing fid.', 400
-        
+
     deletion_token = tokens_manager.create_delete_token(username, fid)
 
     req = requests.delete("http://pdf:5000/delete/" +
-                       fid + "?token=" + deletion_token.decode())
+                          fid + "?token=" + deletion_token.decode())
 
     if req.status_code == 200:
         return '<h1>WEB</h1> File has been deleted', 200

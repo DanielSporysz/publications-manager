@@ -46,6 +46,7 @@ public class MainWindowController {
     public void init(WEBCredentials credentials, Stage stage) {
         this.credentials = credentials;
         this.myStage = stage;
+
         topGreeting.setText("Welcome " + credentials.getLogin() + "!");
         refreshFileList();
         refreshPubList();
@@ -53,36 +54,35 @@ public class MainWindowController {
 
     @FXML
     public void refreshFileList() {
+        files = null;
         APIConnector connector = new APIConnector();
-        try {
-            files = connector.fetchFileList(credentials);
-        } catch (APIException outerEx) {
-            // Fetch a new auth_token and try again
-            if (outerEx.getMessage().equals("Incorrect credentials.")) {
+        int requestAttempts = 1;
+        while (requestAttempts >= 0) {
+            try {
+                files = connector.fetchFileList(credentials);
+                break;
+            } catch (APIException e) {
+                //e.printStackTrace();
+                requestAttempts--;
                 try {
                     credentials.setUToken(connector.fetchAuthToken(credentials.getLogin(), credentials.getPassword()));
-                    if (reconnectAttempts == 0) {
-                        reconnectAttempts = 1;
-                        refreshFileList();
-                        reconnectAttempts = 0;
-                    }
-                } catch (APIException innerEx) {
-                    System.err.println("Error fetching a list of files.");
-                    return;
+                } catch (APIException ex) {
+                    ex.printStackTrace();
+                    break;
                 }
-            } else {
-                System.err.println("Error fetching a list of files.");
-                return;
             }
         }
 
+        // Add the file list to the view
         ObservableList<String> items = FXCollections.observableArrayList();
-        for (Map.Entry<String, String> entry : files.entrySet()) {
-            items.add(entry.getValue() + " (" + entry.getKey() + ")");
+        if (files != null) {
+            for (Map.Entry<String, String> entry : files.entrySet()) {
+                items.add(entry.getValue() + " (" + entry.getKey() + ")");
+            }
         }
         fileListView.setItems(items);
 
-        // Force user to click on a file from a list before using delete option
+        // Force user to click on a file from the list before using any options
         deleteFileButton.setDisable(true);
         downloadButton.setDisable(true);
     }
@@ -90,6 +90,9 @@ public class MainWindowController {
     @FXML
     public void refreshPubList() {
         //TODO
+
+        deletePubButton.setDisable(true);
+        editPubButton.setDisable(true);
     }
 
     @FXML
@@ -118,7 +121,7 @@ public class MainWindowController {
     }
 
     @FXML
-    public void uploadFile() {
+    public void openFileChooserToUpload() {
         FileChooser fileChooser = new FileChooser();
         File selectedFile = fileChooser.showOpenDialog(myStage);
         uploadFile(selectedFile);
@@ -126,24 +129,24 @@ public class MainWindowController {
     }
 
     private void uploadFile(File file) {
-        if (file != null) {
-            APIConnector connector = new APIConnector();
+        if (file == null) {
+            return;
+        }
+
+        APIConnector connector = new APIConnector();
+        int requestAttempts = 1;
+        while (requestAttempts >= 0) {
             try {
                 connector.uploadFile(credentials, file);
-            } catch (APIException outerEx) {
-                if (outerEx.getMessage().equals("Incorrect credentials.")) {
-                    try {
-                        credentials.setUToken(connector.fetchAuthToken(credentials.getLogin(), credentials.getPassword()));
-                        if (reconnectAttempts == 0) {
-                            reconnectAttempts = 1;
-                            uploadFile(file);
-                            reconnectAttempts = 0;
-                        }
-                    } catch (APIException innerEx) {
-                        System.err.println("Error uploading a file.");
-                    }
-                } else {
-                    System.err.println("Error uploading a file.");
+                break;
+            } catch (APIException e) {
+                //e.printStackTrace();
+                requestAttempts--;
+                try {
+                    credentials.setUToken(connector.fetchAuthToken(credentials.getLogin(), credentials.getPassword()));
+                } catch (APIException ex) {
+                    ex.printStackTrace();
+                    break;
                 }
             }
         }
@@ -158,27 +161,24 @@ public class MainWindowController {
     public void deleteFile() {
         if (currentlySelectedFileID != null) {
             APIConnector connector = new APIConnector();
-            try {
-                connector.deleteFile(credentials, currentlySelectedFileID);
-            } catch (APIException outerEx) {
-                if (outerEx.getMessage().equals("Incorrect credentials.")) {
+            int requestAttempts = 1;
+            while (requestAttempts >= 0) {
+                try {
+                    connector.deleteFile(credentials, currentlySelectedFileID);
+                    break;
+                } catch (APIException e) {
+                    //e.printStackTrace();
+                    requestAttempts--;
                     try {
                         credentials.setUToken(connector.fetchAuthToken(credentials.getLogin(), credentials.getPassword()));
-                        if (reconnectAttempts == 0) {
-                            reconnectAttempts = 1;
-                            deleteFile();
-                            reconnectAttempts = 0;
-                        }
-                    } catch (APIException innerEx) {
-                        System.err.println("Error fetching a list of files.");
-                        return;
+                    } catch (APIException ex) {
+                        ex.printStackTrace();
+                        break;
                     }
-                } else {
-                    System.err.println("Error fetching a list of files.");
-                    return;
                 }
             }
         }
+
         refreshFileList();
     }
 
