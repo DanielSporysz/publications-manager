@@ -71,7 +71,7 @@ public class LoginWindowController {
                 newWindow.setScene(new Scene((Pane) loader.load()));
                 newWindow.setMinHeight(512);
                 newWindow.setMinWidth(512);
-                newWindow.setTitle("Main Window");
+                newWindow.setTitle("Publications manager");
                 newWindow.getIcons().add(new Image("/images/favicon.png"));
                 newWindow.show();
 
