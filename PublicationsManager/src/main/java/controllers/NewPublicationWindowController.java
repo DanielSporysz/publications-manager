@@ -3,24 +3,28 @@ package controllers;
 import api.APIConnector;
 import api.APIException;
 import dataclasses.WEBCredentials;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.layout.Pane;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class NewPublicationWindowController {
     @FXML
-    private Button addPubButton;
+    private Button publishButton;
     @FXML
     private Button addFileButton;
     @FXML
@@ -38,14 +42,96 @@ public class NewPublicationWindowController {
 
     private Stage myStage;
     private MainWindowController callback;
-    private Map<String, String> files;
     private WEBCredentials credentials;
+
+    private Map<String, String> allUserFiles;
+    private String currentlySelectedFile;
+    private List<String> attachedFilesIds;
 
     public void init(Stage myStage, Map<String, String> files, WEBCredentials credentials, MainWindowController callback){
         this.myStage = myStage;
-        this.files = files;
+        this.allUserFiles = files;
         this.credentials = credentials;
         this.callback = callback;
+        this.attachedFilesIds = new ArrayList<String>();
+
+        removeFileButton.setDisable(true);
+    }
+
+    public void attachFile(String fid){
+        attachedFilesIds.add(fid);
+        // Removing duplicates
+        attachedFilesIds = new ArrayList<String>(
+                new HashSet<String>(attachedFilesIds));
+        refreshAttachedFileList();
+    }
+
+    @FXML
+    public void detachFile(){
+        String fid = null;
+        Pattern pattern = Pattern.compile(".*\\(([^']*)\\).*");
+        Matcher matcher = pattern.matcher(currentlySelectedFile);
+        if (matcher.matches()) {
+            fid = matcher.group(1);
+        }
+
+        if (fid != null){
+            attachedFilesIds.remove(fid);
+            refreshAttachedFileList();
+        } else {
+            System.err.println("Cannot detach a file. File not selected.");
+        }
+    }
+
+    private void refreshAttachedFileList(){
+        ObservableList<String> items = FXCollections.observableArrayList();
+        for (String id : attachedFilesIds){
+            items.add(allUserFiles.get(id) + " (" + id + ")");
+        }
+        fileListView.setItems(items);
+
+        removeFileButton.setDisable(true);
+    }
+
+    @FXML
+    public void selectFile(){
+        currentlySelectedFile = null;
+
+        MultipleSelectionModel model = fileListView.getSelectionModel();
+        if (model == null) {
+            return;
+        }
+        Object item = model.getSelectedItem();
+        if (item == null) {
+            return;
+        }
+
+        currentlySelectedFile = item.toString();
+
+        removeFileButton.setDisable(false);
+    }
+
+    @FXML
+    public void openFileAttachWindow(){
+        FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("fxml/AddFileToPubWindow.fxml"));
+        Stage newWindow = new Stage();
+        try {
+            newWindow.setScene(new Scene((Pane) loader.load()));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+        newWindow.setMinHeight(500);
+        newWindow.setMinWidth(300);
+        newWindow.setTitle("Choose a file to attach");
+        newWindow.getIcons().add(new Image("/images/favicon.png"));
+        newWindow.initModality(Modality.WINDOW_MODAL);
+        newWindow.initOwner(myStage.getScene().getWindow());
+        newWindow.show();
+
+        // Pass data
+        AddFileToPubWindowController controller = loader.getController();
+        controller.init(newWindow, allUserFiles, this);
     }
 
     @FXML

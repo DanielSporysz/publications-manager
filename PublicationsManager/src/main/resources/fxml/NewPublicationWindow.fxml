@@ -10,13 +10,13 @@
       <Label layoutX="94.0" layoutY="147.0" prefHeight="30.0" text="Year" AnchorPane.leftAnchor="40.0" AnchorPane.topAnchor="120.0" />
       <Label layoutX="72.0" layoutY="183.0" prefHeight="30.0" text="Publisher" AnchorPane.leftAnchor="40.0" AnchorPane.topAnchor="160.0" />
       <Label layoutX="72.0" layoutY="236.0" prefHeight="30.0" text="Files" AnchorPane.leftAnchor="40.0" AnchorPane.topAnchor="200.0" />
-      <ListView fx:id="fileListView" layoutX="110.0" layoutY="213.0" prefWidth="200.0" AnchorPane.bottomAnchor="100.0" AnchorPane.leftAnchor="110.0" AnchorPane.rightAnchor="130.0" AnchorPane.topAnchor="200.0" />
+      <ListView fx:id="fileListView" layoutX="110.0" layoutY="213.0" onMouseClicked="#selectFile" prefWidth="200.0" AnchorPane.bottomAnchor="100.0" AnchorPane.leftAnchor="110.0" AnchorPane.rightAnchor="130.0" AnchorPane.topAnchor="200.0" />
       <TextField fx:id="titleField" layoutX="170.0" layoutY="57.0" prefHeight="30.0" AnchorPane.leftAnchor="110.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="40.0" />
       <TextField fx:id="authorsField" layoutX="319.0" layoutY="74.0" AnchorPane.leftAnchor="110.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="80.0" />
       <TextField fx:id="yearField" layoutX="110.0" layoutY="134.0" AnchorPane.leftAnchor="110.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="120.0" />
       <TextField fx:id="publisherField" layoutX="356.0" layoutY="188.0" AnchorPane.leftAnchor="110.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="160.0" />
-      <Button fx:id="addPubButton" layoutX="274.0" layoutY="345.0" mnemonicParsing="false" onMouseClicked="#publish" prefHeight="30.0" text="Add publication" AnchorPane.bottomAnchor="40.0" />
-      <Button fx:id="addFileButton" layoutX="461.0" layoutY="280.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="80.0" text="Add file" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="200.0" />
-      <Button fx:id="removeFileButton" layoutX="461.0" layoutY="305.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="80.0" text="Remove file" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="240.0" />
+      <Button fx:id="publishButton" layoutX="274.0" layoutY="345.0" mnemonicParsing="false" onMouseClicked="#publish" prefHeight="30.0" text="Add publication" AnchorPane.bottomAnchor="40.0" />
+      <Button fx:id="addFileButton" layoutX="461.0" layoutY="280.0" mnemonicParsing="false" onMouseClicked="#openFileAttachWindow" prefHeight="30.0" prefWidth="80.0" text="Add file" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="200.0" />
+      <Button fx:id="removeFileButton" layoutX="461.0" layoutY="305.0" mnemonicParsing="false" onMouseClicked="#detachFile" prefHeight="30.0" prefWidth="80.0" text="Remove file" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="240.0" />
    </children>
 </AnchorPane>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="300.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.AddFileToPubWindowController">
+   <children>
+      <Label layoutX="87.0" layoutY="49.0" prefHeight="35.0" text="Available files:" AnchorPane.leftAnchor="40.0" AnchorPane.topAnchor="40.0" />
+      <ListView fx:id="fileListView" layoutX="50.0" layoutY="32.0" onMouseClicked="#selectFile" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="85.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="75.0" />
+      <Button fx:id="attachFileButton" layoutX="210.0" layoutY="224.0" mnemonicParsing="false" onMouseClicked="#attachFile" prefHeight="35.0" text="Attach a file" AnchorPane.bottomAnchor="40.666666666666686" />
+   </children>
+</AnchorPane>

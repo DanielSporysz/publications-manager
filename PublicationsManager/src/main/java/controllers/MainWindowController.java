@@ -302,4 +302,37 @@ public class MainWindowController {
         editPubButton.setDisable(false);
     }
 
+    @FXML
+    public void deletePub(MouseEvent event){
+        String pid = null;
+        Pattern pattern = Pattern.compile(".*\\(([^']*)\\).*");
+        Matcher matcher = pattern.matcher(currentlySelectedPubID);
+        if (matcher.matches()) {
+            pid = matcher.group(1);
+        }
+
+        APIConnector connector = new APIConnector();
+        int requestAttempts = 1;
+        while (requestAttempts >= 0) {
+            try {
+                connector.deletePub(credentials, pid);
+                break;
+            } catch (APIException e) {
+                //e.printStackTrace();
+                requestAttempts--;
+                try {
+                    credentials.setUToken(connector.fetchAuthToken(credentials.getLogin(), credentials.getPassword()));
+                } catch (APIException ex) {
+                    ex.printStackTrace();
+                    break;
+                }
+            }
+        }
+    }
+
+    @FXML
+    public void editPub(){
+
+    }
+
 }

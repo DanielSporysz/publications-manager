@@ -60,7 +60,11 @@ public class LoginWindowController {
             APIConnector connector = new APIConnector();
             token = connector.fetchAuthToken(loginField.getText(), passwordField.getText());
         } catch (APIException e) {
-            showErrorMessage(e.getMessage());
+            if (e.getMessage().equals("HTTP error fetching URL")){
+                showErrorMessage("Incorrect credentials");
+            } else {
+                showErrorMessage(e.getMessage());
+            }
             return;
         }
 

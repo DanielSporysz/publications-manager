@@ -39,12 +39,7 @@ public class APIConnector {
                 throw new APIException("Server responded with unknown response.");
             }
         } catch (IOException ioe) {
-            // jsoup throws exception when server responds with 401 - failed log in
-            if (ioe.getMessage().equals("HTTP error fetching URL")) {
-                throw new APIException("Incorrect credentials.");
-            } else {
-                throw new APIException(ioe.getLocalizedMessage());
-            }
+            throw new APIException(ioe.getLocalizedMessage());
         }
     }
 
@@ -68,12 +63,7 @@ public class APIConnector {
                 throw new APIException("Server responded with unknown response.");
             }
         } catch (IOException e) {
-            // jsoup throws exception when server responds with 401 - failed log in
-            if (e.getMessage().equals("HTTP error fetching URL")) {
-                throw new APIException("Incorrect credentials.");
-            } else {
-                throw new APIException(e.getLocalizedMessage());
-            }
+            throw new APIException(e.getLocalizedMessage());
         }
     }
 
@@ -91,12 +81,7 @@ public class APIConnector {
 
             return getMapFromResponse(response);
         } catch (IOException e) {
-            // jsoup throws exception when server responds with 401 - failed log in
-            if (e.getMessage().equals("HTTP error fetching URL")) {
-                throw new APIException("Incorrect credentials.");
-            } else {
-                throw new APIException(e.getLocalizedMessage());
-            }
+            throw new APIException(e.getLocalizedMessage());
         }
     }
 
@@ -113,12 +98,7 @@ public class APIConnector {
                             .ignoreContentType(true)
                             .execute();
         } catch (IOException e) {
-            // jsoup throws exception when server responds with 401 - failed log in
-            if (e.getMessage().equals("HTTP error fetching URL")) {
-                throw new APIException("Incorrect credentials.");
-            } else {
-                throw new APIException(e.getLocalizedMessage());
-            }
+            throw new APIException(e.getLocalizedMessage());
         }
     }
 
@@ -135,12 +115,7 @@ public class APIConnector {
                             .ignoreContentType(true)
                             .execute();
         } catch (IOException e) {
-            // jsoup throws exception when server responds with 401 - failed log in
-            if (e.getMessage().equals("HTTP error fetching URL")) {
-                throw new APIException("Incorrect credentials.");
-            } else {
-                throw new APIException(e.getLocalizedMessage());
-            }
+            throw new APIException(e.getLocalizedMessage());
         }
     }
 
@@ -158,12 +133,7 @@ public class APIConnector {
 
             return getMapFromResponse(response);
         } catch (IOException e) {
-            // jsoup throws exception when server responds with 401 - failed log in
-            if (e.getMessage().equals("HTTP error fetching URL")) {
-                throw new APIException("Incorrect credentials.");
-            } else {
-                throw new APIException(e.getLocalizedMessage());
-            }
+            throw new APIException(e.getLocalizedMessage());
         }
     }
 
@@ -199,12 +169,24 @@ public class APIConnector {
                             .ignoreContentType(true)
                             .execute();
         } catch (IOException e) {
-            // jsoup throws exception when server responds with 401 - failed log in
-            if (e.getMessage().equals("HTTP error fetching URL")) {
-                throw new APIException("Incorrect credentials.");
-            } else {
-                throw new APIException(e.getLocalizedMessage());
-            }
+            throw new APIException(e.getLocalizedMessage());
+        }
+    }
+
+    public void deletePub(WEBCredentials credentials, String pid) throws APIException{
+        try {
+            Connection.Response response =
+                    Jsoup.connect(url + "/del-pub")
+                            .userAgent("Mozilla")
+                            .timeout(10 * 1000)
+                            .method(Connection.Method.DELETE)
+                            .data("auth_token", credentials.getUToken())
+                            .data("pid", pid)
+                            .followRedirects(true)
+                            .ignoreContentType(true)
+                            .execute();
+        } catch (IOException e) {
+            throw new APIException(e.getLocalizedMessage());
         }
     }
 }
