@@ -48,7 +48,7 @@ public class NewPublicationWindowController {
     private String currentlySelectedFile;
     private List<String> attachedFilesIds;
 
-    public void init(Stage myStage, Map<String, String> files, WEBCredentials credentials, MainWindowController callback){
+    public void init(Stage myStage, Map<String, String> files, WEBCredentials credentials, MainWindowController callback) {
         this.myStage = myStage;
         this.allUserFiles = files;
         this.credentials = credentials;
@@ -58,7 +58,7 @@ public class NewPublicationWindowController {
         removeFileButton.setDisable(true);
     }
 
-    public void attachFile(String fid){
+    public void attachFile(String fid) {
         attachedFilesIds.add(fid);
         // Removing duplicates
         attachedFilesIds = new ArrayList<String>(
@@ -67,7 +67,7 @@ public class NewPublicationWindowController {
     }
 
     @FXML
-    public void detachFile(){
+    public void detachFile() {
         String fid = null;
         Pattern pattern = Pattern.compile(".*\\(([^']*)\\).*");
         Matcher matcher = pattern.matcher(currentlySelectedFile);
@@ -75,7 +75,7 @@ public class NewPublicationWindowController {
             fid = matcher.group(1);
         }
 
-        if (fid != null){
+        if (fid != null) {
             attachedFilesIds.remove(fid);
             refreshAttachedFileList();
         } else {
@@ -83,9 +83,9 @@ public class NewPublicationWindowController {
         }
     }
 
-    private void refreshAttachedFileList(){
+    private void refreshAttachedFileList() {
         ObservableList<String> items = FXCollections.observableArrayList();
-        for (String id : attachedFilesIds){
+        for (String id : attachedFilesIds) {
             items.add(allUserFiles.get(id) + " (" + id + ")");
         }
         fileListView.setItems(items);
@@ -94,7 +94,7 @@ public class NewPublicationWindowController {
     }
 
     @FXML
-    public void selectFile(){
+    public void selectFile() {
         currentlySelectedFile = null;
 
         MultipleSelectionModel model = fileListView.getSelectionModel();
@@ -112,7 +112,7 @@ public class NewPublicationWindowController {
     }
 
     @FXML
-    public void openFileAttachWindow(){
+    public void openFileAttachWindow() {
         FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("fxml/AddFileToPubWindow.fxml"));
         Stage newWindow = new Stage();
         try {
@@ -135,7 +135,7 @@ public class NewPublicationWindowController {
     }
 
     @FXML
-    public void publish(){
+    public void publish() {
         Map<String, String> publication = new HashMap<String, String>();
         publication.put("title", titleField.getText());
         publication.put("authors", authorsField.getText());
@@ -145,15 +145,13 @@ public class NewPublicationWindowController {
         List<String> fileNamesWithIds = fileListView.getItems();
         List<String> fileIds = new ArrayList<String>();
         Pattern pattern = Pattern.compile(".*\\(([^']*)\\).*");
-        for (String nameWithId : fileNamesWithIds){
+        for (String nameWithId : fileNamesWithIds) {
             Matcher matcher = pattern.matcher(nameWithId);
             if (matcher.matches()) {
                 fileIds.add(matcher.group(1));
             }
         }
         publication.put("files", fileIds.toString());
-
-        System.out.println(publication);
 
         APIConnector connector = new APIConnector();
         int requestAttempts = 1;

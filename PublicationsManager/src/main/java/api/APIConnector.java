@@ -43,7 +43,7 @@ public class APIConnector {
         }
     }
 
-    public BufferedInputStream downloadFile(WEBCredentials credentials, String fid) throws APIException{
+    public BufferedInputStream downloadFile(WEBCredentials credentials, String fid) throws APIException {
         try {
             Connection.Response response =
                     Jsoup.connect(url + "/file-list")
@@ -57,7 +57,7 @@ public class APIConnector {
                             .maxBodySize(0)
                             .execute();
 
-            if (response.statusCode() == 201){
+            if (response.statusCode() == 201) {
                 return response.bodyStream();
             } else {
                 throw new APIException("Server responded with unknown response.");
@@ -85,7 +85,7 @@ public class APIConnector {
         }
     }
 
-    public void uploadFile(WEBCredentials credentials, File file) throws APIException{
+    public void uploadFile(WEBCredentials credentials, File file) throws APIException {
         try {
             Connection.Response response =
                     Jsoup.connect(url + "/file/upload")
@@ -102,7 +102,7 @@ public class APIConnector {
         }
     }
 
-    public void deleteFile(WEBCredentials credentials, String fid) throws APIException{
+    public void deleteFile(WEBCredentials credentials, String fid) throws APIException {
         try {
             Connection.Response response =
                     Jsoup.connect(url + "/file/delete")
@@ -148,7 +148,7 @@ public class APIConnector {
         }
     }
 
-    public void createPublication(WEBCredentials credentials, Map<String, String> publication) throws APIException{
+    public void createPublication(WEBCredentials credentials, Map<String, String> publication) throws APIException {
         String json;
         try {
             json = new ObjectMapper().writeValueAsString(publication);
@@ -173,7 +173,7 @@ public class APIConnector {
         }
     }
 
-    public void deletePub(WEBCredentials credentials, String pid) throws APIException{
+    public void deletePub(WEBCredentials credentials, String pid) throws APIException {
         try {
             Connection.Response response =
                     Jsoup.connect(url + "/del-pub")

@@ -25,7 +25,7 @@ public class AddFileToPubWindowController {
     private Map<String, String> files;
     private String currentlySelectedFileWithID;
 
-    public void init(Stage myStage, Map<String, String> files, NewPublicationWindowController callback){
+    public void init(Stage myStage, Map<String, String> files, NewPublicationWindowController callback) {
         this.myStage = myStage;
         this.files = files;
         this.callback = callback;
@@ -33,7 +33,7 @@ public class AddFileToPubWindowController {
         fillFileListView();
     }
 
-    private void fillFileListView(){
+    private void fillFileListView() {
         // Add the file list to the view
         ObservableList<String> items = FXCollections.observableArrayList();
         if (files != null) {
@@ -47,7 +47,7 @@ public class AddFileToPubWindowController {
     }
 
     @FXML
-    public void selectFile(){
+    public void selectFile() {
         currentlySelectedFileWithID = null;
 
         MultipleSelectionModel model = fileListView.getSelectionModel();
@@ -65,7 +65,7 @@ public class AddFileToPubWindowController {
     }
 
     @FXML
-    public void attachFile(){
+    public void attachFile() {
         String fid = null;
         Pattern pattern = Pattern.compile(".*\\(([^']*)\\).*");
         Matcher matcher = pattern.matcher(currentlySelectedFileWithID);
@@ -73,7 +73,7 @@ public class AddFileToPubWindowController {
             fid = matcher.group(1);
         }
 
-        if (fid != null){
+        if (fid != null) {
             callback.attachFile(fid);
             myStage.close();
         } else {

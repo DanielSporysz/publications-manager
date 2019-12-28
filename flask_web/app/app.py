@@ -224,6 +224,7 @@ def get_publist():
 
     return make_response(jsonify(pubs)), 201
 
+
 @app.route('/api/new-pub', methods=['POST'])
 def create_pub():
     auth_token = request.form["auth_token"]
@@ -258,10 +259,30 @@ def create_pub():
 def update_pub():
     return "hello", 200
 
-# TODO handle publication deletion
+
 @app.route('/api/del-pub', methods=['DELETE'])
 def delete_pub():
-    return "hello", 200
+    auth_token = request.headers.get(
+        'auth_token') or request.args.get('auth_token')
+    pid = request.headers.get('pid') or request.args.get('pid')
+
+    if auth_token is None:
+        return '<h1>WEB</h1> No token', 401
+    if not valid(auth_token):
+        return '<h1>WEB</h1> Invalid token', 401
+    payload = decode(auth_token, JWT_SECRET)
+
+    username = payload.get('username')
+    if username is None:
+        return '<h1>WEB</h1> Incorrect token', 401
+    if pid is None:
+        return '<h1>WEB</h1> Incorrect request. Missing pid.', 400
+
+    try:
+        cache.hdel(username, pid)
+        return '<h1>WEB</h1> Publication has been deleted.', 200
+    except:
+        return '<h1>WEB</h1> Error deleting a publication.', 500
 
 
 @app.route('/api/file/download', methods=['GET'])

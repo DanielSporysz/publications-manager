@@ -38,18 +38,16 @@ public class LoginWindowController {
     }
 
     @FXML
-    public void handleOnKeyPressed(KeyEvent ke)
-    {
+    public void handleOnKeyPressed(KeyEvent ke) {
         clearErrorMessage();
 
         // Handle Enter press
-        if (ke.getCode().equals(KeyCode.ENTER))
-        {
+        if (ke.getCode().equals(KeyCode.ENTER)) {
             login();
         }
     }
 
-    public void requestFocusOnLoginField(){
+    public void requestFocusOnLoginField() {
         loginField.requestFocus();
     }
 
@@ -60,7 +58,7 @@ public class LoginWindowController {
             APIConnector connector = new APIConnector();
             token = connector.fetchAuthToken(loginField.getText(), passwordField.getText());
         } catch (APIException e) {
-            if (e.getMessage().equals("HTTP error fetching URL")){
+            if (e.getMessage().equals("HTTP error fetching URL")) {
                 showErrorMessage("Incorrect credentials");
             } else {
                 showErrorMessage(e.getMessage());

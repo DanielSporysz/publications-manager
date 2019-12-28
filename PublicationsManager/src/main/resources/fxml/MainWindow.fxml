@@ -26,8 +26,8 @@
       <Button fx:id="refreshPubListButton" layoutX="928.0" layoutY="300.0" mnemonicParsing="false" onMouseClicked="#refreshPubList" text="Refresh" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="300.0" />
       <Button fx:id="deleteFileButton" disable="true" layoutX="713.0" layoutY="75.0" mnemonicParsing="false" onMouseClicked="#deleteFile" text="Delete" AnchorPane.rightAnchor="260.33333333333337" AnchorPane.topAnchor="75.0" />
       <Button fx:id="deletePubButton" disable="true" layoutX="732.0" layoutY="300.0" mnemonicParsing="false" onMouseClicked="#deletePub" text="Delete" AnchorPane.rightAnchor="260.0" AnchorPane.topAnchor="300.0" />
-      <Button fx:id="editPubButton" disable="true" layoutX="676.0" layoutY="300.0" mnemonicParsing="false" onMouseClicked="#editPub" text="Edit" AnchorPane.rightAnchor="320.0" AnchorPane.topAnchor="300.0" />
+      <Button fx:id="editPubButton" disable="true" layoutX="676.0" layoutY="300.0" mnemonicParsing="false" onMouseClicked="#editPub" prefWidth="40.0" text="Edit" AnchorPane.rightAnchor="320.0" AnchorPane.topAnchor="300.0" />
       <Button fx:id="downloadButton" disable="true" layoutX="660.0" layoutY="75.0" mnemonicParsing="false" onMouseClicked="#downloadFile" text="Download" AnchorPane.rightAnchor="320.0" AnchorPane.topAnchor="75.0" />
-      <Button fx:id="viewPubButton" layoutX="581.0" layoutY="296.0" mnemonicParsing="false" text="View" AnchorPane.topAnchor="300.0" />
+      <Button fx:id="viewPubButton" disable="true" layoutX="625.0" layoutY="300.0" mnemonicParsing="false" onMouseClicked="#viewPub" text="View" AnchorPane.rightAnchor="370.0" AnchorPane.topAnchor="300.0" />
    </children>
 </AnchorPane>

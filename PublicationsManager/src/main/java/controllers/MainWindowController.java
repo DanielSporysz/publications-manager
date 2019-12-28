@@ -2,6 +2,8 @@ package controllers;
 
 import api.APIConnector;
 import api.APIException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dataclasses.WEBCredentials;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -36,6 +38,8 @@ public class MainWindowController {
     private Button deletePubButton;
     @FXML
     private Button editPubButton;
+    @FXML
+    private Button viewPubButton;
 
     private WEBCredentials credentials;
     private Map<String, String> files;
@@ -192,11 +196,11 @@ public class MainWindowController {
             stage.getIcons().add(new Image("/images/favicon.png"));
 
             //Deactivate Defaultbehavior for yes-Button:
-            Button yesButton = (Button) alert.getDialogPane().lookupButton( ButtonType.YES );
-            yesButton.setDefaultButton( false );
+            Button yesButton = (Button) alert.getDialogPane().lookupButton(ButtonType.YES);
+            yesButton.setDefaultButton(false);
             //Activate Defaultbehavior for no-Button:
-            Button noButton = (Button) alert.getDialogPane().lookupButton( ButtonType.NO );
-            noButton.setDefaultButton( true );
+            Button noButton = (Button) alert.getDialogPane().lookupButton(ButtonType.NO);
+            noButton.setDefaultButton(true);
 
             alert.showAndWait();
             if (alert.getResult() != ButtonType.YES) {
@@ -249,8 +253,15 @@ public class MainWindowController {
         // Add the file list to the view
         ObservableList<String> items = FXCollections.observableArrayList();
         if (publications != null) {
+            ObjectMapper mapper = new ObjectMapper();
             for (Map.Entry<String, String> entry : publications.entrySet()) {
-                items.add(entry.getKey());
+                String json = entry.getValue();
+                try {
+                    Map<String, String> map = mapper.readValue(json, Map.class);
+                    items.add(map.get("title") + " (" + entry.getKey() + ")");
+                } catch (JsonProcessingException e) {
+                    System.err.println("Could not extract publication title. The pub list is missing elements.");
+                }
             }
         }
         pubListView.setItems(items);
@@ -258,10 +269,11 @@ public class MainWindowController {
         // Force user to click on a file from the list before using any options
         deletePubButton.setDisable(true);
         editPubButton.setDisable(true);
+        viewPubButton.setDisable(true);
     }
 
     @FXML
-    public void openPublicationCreationWindow(){
+    public void openPublicationCreationWindow() {
         FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("fxml/NewPublicationWindow.fxml"));
         Stage newWindow = new Stage();
         try {
@@ -300,16 +312,26 @@ public class MainWindowController {
 
         deletePubButton.setDisable(false);
         editPubButton.setDisable(false);
+        viewPubButton.setDisable(false);
     }
 
     @FXML
-    public void deletePub(MouseEvent event){
+    public void deletePub(MouseEvent event) {
+        if (currentlySelectedPubID == null) {
+            System.err.println("Cannot delete a pub. No pubId selected.");
+            return;
+        }
+
         String pid = null;
         Pattern pattern = Pattern.compile(".*\\(([^']*)\\).*");
         Matcher matcher = pattern.matcher(currentlySelectedPubID);
         if (matcher.matches()) {
             pid = matcher.group(1);
+        } else {
+            System.err.println("Couldn't extract pub Id.");
+            return;
         }
+
 
         APIConnector connector = new APIConnector();
         int requestAttempts = 1;
@@ -328,10 +350,17 @@ public class MainWindowController {
                 }
             }
         }
+
+        refreshPubList();
     }
 
     @FXML
-    public void editPub(){
+    public void editPub() {
+
+    }
+
+    @FXML
+    public void viewPub() {
 
     }
 
