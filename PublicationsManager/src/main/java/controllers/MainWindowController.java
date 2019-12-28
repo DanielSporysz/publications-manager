@@ -322,16 +322,11 @@ public class MainWindowController {
             return;
         }
 
-        String pid = null;
-        Pattern pattern = Pattern.compile(".*\\(([^']*)\\).*");
-        Matcher matcher = pattern.matcher(currentlySelectedPubID);
-        if (matcher.matches()) {
-            pid = matcher.group(1);
-        } else {
+        String pid = extractID(currentlySelectedFileID);
+        if (pid == null) {
             System.err.println("Couldn't extract pub Id.");
             return;
         }
-
 
         APIConnector connector = new APIConnector();
         int requestAttempts = 1;
@@ -361,7 +356,55 @@ public class MainWindowController {
 
     @FXML
     public void viewPub() {
+        if (currentlySelectedPubID == null) {
+            System.err.println("Cannot delete a pub. No pubId selected.");
+            return;
+        }
+        String pid = extractID(currentlySelectedFileID);
+        if (pid == null) {
+            System.err.println("Couldn't extract pub Id.");
+            return;
+        }
 
+        String stringPublication = publications.get(pid);
+        Map<String, String> publication = null;
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            publication = mapper.readValue(stringPublication, Map.class);
+        } catch (JsonProcessingException e) {
+            System.err.println("Could not extract publication files.");
+            return;
+        }
+
+        FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("fxml/ViewPublicationWindow.fxml"));
+        Stage newWindow = new Stage();
+        try {
+            newWindow.setScene(new Scene((Pane) loader.load()));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+        newWindow.setMinHeight(500);
+        newWindow.setMinWidth(300);
+        newWindow.setTitle("Publication");
+        newWindow.getIcons().add(new Image("/images/favicon.png"));
+        newWindow.initModality(Modality.WINDOW_MODAL);
+        newWindow.initOwner(myStage.getScene().getWindow());
+        newWindow.show();
+
+        // Pass data
+        ViewPublicationWindowController controller = loader.getController();
+        controller.init(publication);
+    }
+
+    private String extractID(String text) {
+        Pattern pattern = Pattern.compile(".*\\(([^']*)\\).*");
+        Matcher matcher = pattern.matcher(currentlySelectedPubID);
+        if (matcher.matches()) {
+            return matcher.group(1);
+        } else {
+            return null;
+        }
     }
 
 }
