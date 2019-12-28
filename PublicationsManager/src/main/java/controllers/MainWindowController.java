@@ -45,7 +45,7 @@ public class MainWindowController {
     private Map<String, String> files;
     private Map<String, String> publications;
     private String currentlySelectedFileID;
-    private String currentlySelectedPubID;
+    private String currentlySelectedPub;
 
     private Stage myStage;
 
@@ -188,22 +188,31 @@ public class MainWindowController {
         }
     }
 
+    private boolean askForConfirmation(String question) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, question, ButtonType.NO, ButtonType.YES);
+        Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+        stage.getIcons().add(new Image("/images/favicon.png"));
+
+        //Deactivate Defaultbehavior for yes-Button:
+        Button yesButton = (Button) alert.getDialogPane().lookupButton(ButtonType.YES);
+        yesButton.setDefaultButton(false);
+        //Activate Defaultbehavior for no-Button:
+        Button noButton = (Button) alert.getDialogPane().lookupButton(ButtonType.NO);
+        noButton.setDefaultButton(true);
+
+        alert.showAndWait();
+        if (alert.getResult() == ButtonType.YES) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     @FXML
     public void deleteFile() {
         if (currentlySelectedFileID != null) {
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Delete " + currentlySelectedFileID + " ?", ButtonType.NO, ButtonType.YES);
-            Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
-            stage.getIcons().add(new Image("/images/favicon.png"));
-
-            //Deactivate Defaultbehavior for yes-Button:
-            Button yesButton = (Button) alert.getDialogPane().lookupButton(ButtonType.YES);
-            yesButton.setDefaultButton(false);
-            //Activate Defaultbehavior for no-Button:
-            Button noButton = (Button) alert.getDialogPane().lookupButton(ButtonType.NO);
-            noButton.setDefaultButton(true);
-
-            alert.showAndWait();
-            if (alert.getResult() != ButtonType.YES) {
+            boolean deleteFile = askForConfirmation("Delete " + currentlySelectedFileID + " ?");
+            if (!deleteFile) {
                 return;
             }
 
@@ -297,7 +306,7 @@ public class MainWindowController {
 
     @FXML
     public void selectPublication(MouseEvent e) {
-        currentlySelectedPubID = null;
+        currentlySelectedPub = null;
 
         MultipleSelectionModel model = pubListView.getSelectionModel();
         if (model == null) {
@@ -308,7 +317,7 @@ public class MainWindowController {
             return;
         }
 
-        currentlySelectedPubID = item.toString();
+        currentlySelectedPub = item.toString();
 
         deletePubButton.setDisable(false);
         editPubButton.setDisable(false);
@@ -317,14 +326,19 @@ public class MainWindowController {
 
     @FXML
     public void deletePub(MouseEvent event) {
-        if (currentlySelectedPubID == null) {
+        if (currentlySelectedPub == null) {
             System.err.println("Cannot delete a pub. No pubId selected.");
             return;
         }
 
-        String pid = extractID(currentlySelectedFileID);
+        String pid = extractID(currentlySelectedPub);
         if (pid == null) {
             System.err.println("Couldn't extract pub Id.");
+            return;
+        }
+
+        boolean deletePub = askForConfirmation("Delete " + pid + " ?");
+        if (!deletePub) {
             return;
         }
 
@@ -349,12 +363,12 @@ public class MainWindowController {
         refreshPubList();
     }
 
-    private Map<String, String> currentPubAsMap(){
-        if (currentlySelectedPubID == null) {
+    private Map<String, String> currentPubAsMap() {
+        if (currentlySelectedPub == null) {
             System.err.println("currentPubAsMap: no pub is selected");
             return null;
         }
-        String pid = extractID(currentlySelectedFileID);
+        String pid = extractID(currentlySelectedPub);
         if (pid == null) {
             System.err.println("currentPubAsMap: couldn't extract pub ID");
             return null;
@@ -375,7 +389,7 @@ public class MainWindowController {
     @FXML
     public void editPub() {
         Map<String, String> publication = currentPubAsMap();
-        if (publication == null){
+        if (publication == null) {
             return;
         }
 
@@ -403,7 +417,7 @@ public class MainWindowController {
     @FXML
     public void viewPub() {
         Map<String, String> publication = currentPubAsMap();
-        if (publication == null){
+        if (publication == null) {
             return;
         }
 
@@ -430,11 +444,32 @@ public class MainWindowController {
 
     private String extractID(String text) {
         Pattern pattern = Pattern.compile(".*\\(([^']*)\\).*");
-        Matcher matcher = pattern.matcher(currentlySelectedPubID);
+        Matcher matcher = pattern.matcher(text);
         if (matcher.matches()) {
             return matcher.group(1);
         } else {
             return null;
+        }
+    }
+
+    @FXML
+    public void logout() {
+        try {
+            Stage stage = new Stage();
+            FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("fxml/LoginWindow.fxml"));
+            stage.setScene(new Scene((Pane) loader.load()));
+            stage.setResizable(false);
+            stage.setTitle("Publications Manager");
+            stage.getIcons().add(new Image("/images/favicon.png"));
+            stage.show();
+
+            //Request focus on login
+            LoginWindowController controller = loader.getController();
+            controller.requestFocusOnLoginField();
+
+            myStage.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

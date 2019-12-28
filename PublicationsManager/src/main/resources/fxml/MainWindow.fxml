@@ -7,8 +7,8 @@
 <AnchorPane fx:id="mainAnchor" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="576.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.MainWindowController">
    <children>
       <MenuBar prefHeight="25.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-         <Menu fx:id="mMain" text="Test">
-            <MenuItem text="Test2" />
+         <Menu fx:id="mMain" text="Account">
+            <MenuItem fx:id="logoutMenu" onAction="#logout" text="Logout" />
          </Menu>
       </MenuBar>
       <Label fx:id="topGreeting" alignment="CENTER" layoutX="44.0" layoutY="37.0" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="25.0" text="Welcome X!" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="40.0">

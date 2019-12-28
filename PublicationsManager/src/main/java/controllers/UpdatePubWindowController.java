@@ -73,7 +73,7 @@ public class UpdatePubWindowController {
         String stringFiles = publication.get("files");
         if (!stringFiles.equals("[]")) {
             String[] files = stringFiles.replaceAll("\\[", "")
-                    .replaceAll("\\]", "")
+                    .replaceAll("]", "")
                     .replaceAll("\\s", "")
                     .split(",");
             for (String fileID : files) {
