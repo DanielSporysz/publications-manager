@@ -349,21 +349,15 @@ public class MainWindowController {
         refreshPubList();
     }
 
-    @FXML
-    public void editPub() {
-
-    }
-
-    @FXML
-    public void viewPub() {
+    private Map<String, String> currentPubAsMap(){
         if (currentlySelectedPubID == null) {
-            System.err.println("Cannot delete a pub. No pubId selected.");
-            return;
+            System.err.println("currentPubAsMap: no pub is selected");
+            return null;
         }
         String pid = extractID(currentlySelectedFileID);
         if (pid == null) {
-            System.err.println("Couldn't extract pub Id.");
-            return;
+            System.err.println("currentPubAsMap: couldn't extract pub ID");
+            return null;
         }
 
         String stringPublication = publications.get(pid);
@@ -371,8 +365,45 @@ public class MainWindowController {
         try {
             ObjectMapper mapper = new ObjectMapper();
             publication = mapper.readValue(stringPublication, Map.class);
+            return publication;
         } catch (JsonProcessingException e) {
-            System.err.println("Could not extract publication files.");
+            System.err.println("currentPubAsMap: could not map publication");
+            return null;
+        }
+    }
+
+    @FXML
+    public void editPub() {
+        Map<String, String> publication = currentPubAsMap();
+        if (publication == null){
+            return;
+        }
+
+        FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("fxml/UpdatePubWindow.fxml"));
+        Stage newWindow = new Stage();
+        try {
+            newWindow.setScene(new Scene((Pane) loader.load()));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+        newWindow.setMinHeight(500);
+        newWindow.setMinWidth(300);
+        newWindow.setTitle("Publication Edition");
+        newWindow.getIcons().add(new Image("/images/favicon.png"));
+        newWindow.initModality(Modality.WINDOW_MODAL);
+        newWindow.initOwner(myStage.getScene().getWindow());
+        newWindow.show();
+
+        // Pass data
+        UpdatePubWindowController controller = loader.getController();
+        controller.init(newWindow, files, credentials, this, publication);
+    }
+
+    @FXML
+    public void viewPub() {
+        Map<String, String> publication = currentPubAsMap();
+        if (publication == null){
             return;
         }
 

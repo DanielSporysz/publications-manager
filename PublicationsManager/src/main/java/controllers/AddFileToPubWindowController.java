@@ -1,6 +1,5 @@
 package controllers;
 
-import com.fasterxml.jackson.core.util.VersionUtil;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -21,14 +20,25 @@ public class AddFileToPubWindowController {
     private Button attachFileButton;
 
     private Stage myStage;
-    private NewPublicationWindowController callback;
+    private NewPublicationWindowController newPubCallback;
+    private UpdatePubWindowController updatePubCallback;
     private Map<String, String> files;
     private String currentlySelectedFileWithID;
 
     public void init(Stage myStage, Map<String, String> files, NewPublicationWindowController callback) {
         this.myStage = myStage;
         this.files = files;
-        this.callback = callback;
+        this.newPubCallback = callback;
+        this.updatePubCallback = null;
+
+        fillFileListView();
+    }
+
+    public void init(Stage myStage, Map<String, String> files, UpdatePubWindowController callback) {
+        this.myStage = myStage;
+        this.files = files;
+        this.newPubCallback = null;
+        this.updatePubCallback = callback;
 
         fillFileListView();
     }
@@ -74,7 +84,11 @@ public class AddFileToPubWindowController {
         }
 
         if (fid != null) {
-            callback.attachFile(fid);
+            if (newPubCallback != null){
+                newPubCallback.attachFile(fid);
+            } else {
+                updatePubCallback.attachFile(fid);
+            }
             myStage.close();
         } else {
             System.err.println("File to attach has not been selected yet.");

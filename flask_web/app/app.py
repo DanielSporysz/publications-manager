@@ -257,7 +257,29 @@ def create_pub():
 # TODO handle publication update
 @app.route('/api/update-pub', methods=['PUT'])
 def update_pub():
-    return "hello", 200
+    auth_token = request.form["auth_token"]
+    str_pub = request.form["publication"]
+    pid = request.form["pid"]
+
+    if auth_token is None:
+        return '<h1>WEB</h1> No token', 401
+    if not valid(auth_token):
+        return '<h1>WEB</h1> Invalid token', 401
+    payload = decode(auth_token, JWT_SECRET)
+
+    username = payload.get('username')
+    if username is None:
+        return '<h1>WEB</h1> Incorrect token', 401
+
+    # saving a publication
+    try:
+        json_pub = json.loads(str_pub)
+        pub = {"id": pid, "title": json_pub["title"], "authors": json_pub["authors"], "year": json_pub["year"],
+                "publisher": json_pub["publisher"], "files": json_pub["files"]}
+        cache.hset(username, pid, json.dumps(pub))
+        return '<h1>WEB</h1> Publication has been posted.', 201
+    except:
+        return '<h1>WEB</h1> Error during posting a publication.', 500
 
 
 @app.route('/api/del-pub', methods=['DELETE'])

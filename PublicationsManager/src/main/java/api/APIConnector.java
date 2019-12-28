@@ -173,6 +173,32 @@ public class APIConnector {
         }
     }
 
+    public void updatePublication(WEBCredentials credentials, Map<String, String> publication, String pid) throws APIException {
+        String json;
+        try {
+            json = new ObjectMapper().writeValueAsString(publication);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        try {
+            Connection.Response response =
+                    Jsoup.connect(url + "/update-pub")
+                            .userAgent("Mozilla")
+                            .timeout(10 * 1000)
+                            .method(Connection.Method.PUT)
+                            .data("auth_token", credentials.getUToken())
+                            .data("publication", json)
+                            .data("pid", pid)
+                            .followRedirects(true)
+                            .ignoreContentType(true)
+                            .execute();
+        } catch (IOException e) {
+            throw new APIException(e.getLocalizedMessage());
+        }
+    }
+
     public void deletePub(WEBCredentials credentials, String pid) throws APIException {
         try {
             Connection.Response response =
