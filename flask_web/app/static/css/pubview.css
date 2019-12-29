@@ -1,0 +1,13 @@
+label.pub.view.label {
+    width: 100%;
+    display: inline-block;
+}
+
+div.pub.field {
+    margin-left: 2.5em;
+    padding: 10px;
+}
+
+fieldset {
+    padding: 10px;
+}

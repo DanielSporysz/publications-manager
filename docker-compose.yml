@@ -20,6 +20,8 @@ services:
       - web_db
     volumes:
       - ./flask_web/app:/var/www/app
+    environment:
+      FLASK_ENV: development
 
   pdf:
     build: flask_pdf
@@ -27,6 +29,8 @@ services:
       - pdf_db
     volumes:
       - ./flask_pdf/app:/var/pdf/app
+    environment:
+      FLASK_ENV: development
 
   web_db:
     image: redis

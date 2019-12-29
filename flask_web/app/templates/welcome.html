@@ -2,6 +2,7 @@
 
 <head>
     <meta charset="utf-8" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/sharedstyle.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/welcome.css') }}">
@@ -29,8 +30,40 @@
 
         <fieldset class="fieldset">
             <legend>List of your files:</legend>
-            {% for fname, fid, ftoken in package %}
-            <a class="a downloadfile" href="{{PDF}}/download/{{fid}}?token={{ftoken}}">{{ fname }}</a> {% endfor %}
+            {% for fname, fid, ftoken, deltoken in package %}
+            <a class="a downloadfile" href="{{PDF}}/download/{{fid}}?token={{ftoken}}">{{ fname }}</a>
+
+
+            <form class="del" action="{{PDF}}/delete/{{fid}}" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="token" value="{{deltoken}}" />
+                <input type="hidden" name="callback" value="{{WEB}}/callback-deletion" />
+                <button type="submit" class="del">
+                    <img  class="trash" src="{{ url_for('static', filename='trash_small.svg') }}" />
+                </button>
+            </form>
+            {% endfor %}
+        </fieldset>
+
+        <fieldset class="fieldset">
+            <legend>Create a new publication:</legend>
+            <form class="del" action="{{PDF}}" method="POST" enctype="multipart/form-data">
+                <button type="submit">
+                    Open creator
+                </button>
+            </form>
+        </fieldset>
+
+        <fieldset class="fieldset">
+            <legend>List of your publications:</legend>
+            {% for pub_title, pub_id in publications %}
+            <a class="a downloadfile" href="{{WEB}}/publication/{{pub_id}}">{{pub_title}}</a>
+
+            <form class="del" action="{{WEB}}/delete/publication/{{pub_id}}" method="POST" enctype="multipart/form-data">
+                <button type="submit" class="del">
+                    <img  class="trash" src="{{ url_for('static', filename='trash_small.svg') }}" />
+                </button>
+            </form>
+            {% endfor %}
         </fieldset>
     </div>
 </body>

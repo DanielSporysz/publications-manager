@@ -55,9 +55,13 @@ def download(fid):
 @app.route('/upload', methods=['POST'])
 def upload():
     f = request.files["file"]
-    t = request.headers.get('token') or request.args.get('token')
-    c = request.headers.get('callback') or request.args.get('callback')
-    fn = request.headers.get('fname') or request.args.get('fname')
+    t = request.headers.get('token') or request.args.get(
+        'token') or request.form["token"]
+    # optional arguments
+    c = request.headers.get('callback') or request.args.get(
+        'callback') or request.form.get("callback")
+    fn = request.headers.get('fname') or request.args.get(
+        'fname') or request.form.get("fname")
 
     if f is None:
         return redirect(f"{c}?error=No+file+provided") if c \
@@ -87,7 +91,7 @@ def upload():
             cache.set(fid, f.filename)
         else:
             cache.set(fid, fn)
-            #cache.bgsave()
+            # cache.bgsave()
         return redirect(f"{c}?filename={f.filename}&fid={fid}") if c \
             else (f'<h1>PDF</h1> Uploaded {f.filename} - {fid}', 200)
     except:
@@ -126,13 +130,16 @@ def files(username):
     return jsonify(fnames)
 
 
-@app.route('/delete/<fid>', methods=['DELETE'])
+@app.route('/delete/<fid>', methods=['POST', 'DELETE'])
 def delete(fid):
     # validation
     if len(fid) == 0:
         return '<h1>PDF</h1> Missing fid', 404
 
-    token = request.headers.get('token') or request.args.get('token')
+    token = request.headers.get('token') or request.args.get(
+        'token') or request.form.get('token')
+    c = request.headers.get('callback') or request.args.get(
+        'callback') or request.form.get('callback')
     if token is None:
         return '<h1>PDF</h1> No token', 401
     if not valid(token):
@@ -156,9 +163,11 @@ def delete(fid):
     try:
         cache.hdel(p_username, fid)
         cache.delete(fid)
-        return ('<h1>PDF</h1> File has been deleted.', 200)
+        return redirect(f"{c}?fid={fid}") if c \
+            else (f'<h1>PDF</h1> File {fid} has been deleted', 200)
     except:
-        return ('<h1>PDF</h1> An error occured during the deletion of a file.', 500)
+        return redirect(f"{c}?fid={fid}") if c \
+            else (f'<h1>PDF</h1> An error occured during the deleting file {fid}', 500)
 
 
 def valid(token):

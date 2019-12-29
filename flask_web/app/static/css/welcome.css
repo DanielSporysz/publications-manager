@@ -22,5 +22,15 @@ button.sendfile {
 
 a.downloadfile {
     display: inline-block;
-    width: 80%;
+    width: 89%;
+    margin-bottom: 5px;
+}
+
+form.del {
+    display: inline-block;
+    width: 10%;
+}
+
+img.trash {
+    height: 15px;
 }
