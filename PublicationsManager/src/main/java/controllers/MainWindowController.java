@@ -439,7 +439,7 @@ public class MainWindowController {
 
         // Pass data
         ViewPublicationWindowController controller = loader.getController();
-        controller.init(publication);
+        controller.init(publication, files);
     }
 
     private String extractID(String text) {

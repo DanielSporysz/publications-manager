@@ -110,7 +110,11 @@ public class UpdatePubWindowController {
     private void refreshAttachedFileList() {
         ObservableList<String> items = FXCollections.observableArrayList();
         for (String id : attachedFilesIds) {
-            items.add(allUserFiles.get(id) + " (" + id + ")");
+            if(allUserFiles.get(id) == null){
+                items.add("FILE HAS BEEN DELETED" + " (" + id + ")");
+            } else {
+                items.add(allUserFiles.get(id) + " (" + id + ")");
+            }
         }
         fileListView.setItems(items);
 
