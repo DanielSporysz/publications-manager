@@ -5,6 +5,7 @@ from flask import render_template
 from flask import jsonify
 from flask import redirect
 from uuid import uuid4
+from ast import literal_eval
 import json
 import requests
 import redis
@@ -79,7 +80,7 @@ def welcome():
         publications = get_pub_list(username)
 
         return render_template("welcome.html", package=zip_of_file_list,
-                               upload_token=upload_token, PDF=PDF, WEB=WEB, 
+                               upload_token=upload_token, PDF=PDF, WEB=WEB,
                                username=username.decode(), publications=publications)
     else:
         return my_redirect("/login")
@@ -100,6 +101,7 @@ def get_pub_list(username):
 
     return zip(publications_titles, publications_ids)
 
+
 def get_zip_of_file_list(username, list_token):
     req = requests.get("http://pdf:5000/files/" +
                        username + "?token=" + list_token)
@@ -117,7 +119,8 @@ def get_zip_of_file_list(username, list_token):
             file_names.append(payload[fid])
             file_ids.append(fid)
             download_tokens.append(token)
-            delete_tokens.append(tokens_manager.create_delete_token(username, fid).decode('ascii'))
+            delete_tokens.append(tokens_manager.create_delete_token(
+                username, fid).decode('ascii'))
 
     return zip(file_names, file_ids, download_tokens, delete_tokens)
 
@@ -139,7 +142,7 @@ def view_publication(pid):
         return '<h1>PDF</h1> Missing publication id', 404
 
     session_id = request.cookies.get('session_id')
-    username = sessions_manager.get_session_user(session_id)
+    username = sessions_manager.get_session_user(session_id).decode()
 
     if sessions_manager.validate_session(session_id) and username is not None:
         publication_binary = cache.hget(username, pid)
@@ -147,9 +150,41 @@ def view_publication(pid):
             return '<h1>PDF</h1> No such publication', 404
 
         publication = json.loads(publication_binary.decode())
-        return render_template("viewpublication.html", username=username.decode(), publication=publication)
+        list_of_file_ids = publication["files"].replace(
+            '[', '').replace(']', '').replace(',', '').split()
+        print(type(list_of_file_ids), file=sys.stderr)
+        print(type(list_of_file_ids), file=sys.stderr)
+        print(type(list_of_file_ids), file=sys.stderr)
+        print(type(list_of_file_ids), file=sys.stderr)
+
+        # fetching file names, publications contains only file ids
+
+        req = requests.get("http://pdf:5000/files/" + username
+                           + "?token=" + tokens_manager.create_getFileList_token(username).decode())
+        file_ids = []
+        file_display_names = []
+        file_download_tokens = []
+        if req.status_code == 200:
+            payload = req.json()
+
+            for file_id in list_of_file_ids:
+                file_ids.append(file_id)
+                file_download_tokens.append(
+                    tokens_manager.create_download_token(username, file_id).decode())
+                if file_id in payload.keys():
+                    file_display_names.append(
+                        payload[file_id] + " (" + file_id + ")")
+                else:
+                    file_display_names.append(
+                        "FILE HAS BEEN DELETED (" + file_id + ")")
+
+        return render_template("viewpublication.html", username=username,
+                               publication=publication, file_package=zip(file_ids,
+                                                                         file_display_names, file_download_tokens),
+                               PDF=PDF)
     else:
         return my_redirect("/login")
+
 
 @app.route('/delete/publication/<pid>', methods=['POST'])
 def delete_publication(pid):
@@ -162,12 +197,13 @@ def delete_publication(pid):
     if sessions_manager.validate_session(session_id) and username is not None:
         try:
             cache.hdel(username, pid)
-            msg="Publication " + pid + " has been deleted successfully."
+            msg = "Publication " + pid + " has been deleted successfully."
         except:
-            msg="An error occured while deleting a publication!"
+            msg = "An error occured while deleting a publication!"
         return render_template("callback.html", msg=msg, username=username.decode())
     else:
         return my_redirect("/login")
+
 
 @app.route('/callback')
 def uploaded():
@@ -189,6 +225,7 @@ def uploaded():
         msg = "File " + str(fname) + " uploaded successfully."
 
     return render_template("callback.html", msg=msg, username=username)
+
 
 @app.route('/callback-deletion')
 def deleted():
@@ -349,7 +386,7 @@ def update_pub():
     try:
         json_pub = json.loads(str_pub)
         pub = {"id": pid, "title": json_pub["title"], "authors": json_pub["authors"], "year": json_pub["year"],
-                "publisher": json_pub["publisher"], "files": json_pub["files"]}
+               "publisher": json_pub["publisher"], "files": json_pub["files"]}
         cache.hset(username, pid, json.dumps(pub))
         return '<h1>WEB</h1> Publication has been posted.', 201
     except:

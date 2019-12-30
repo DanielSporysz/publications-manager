@@ -31,7 +31,10 @@
             <label class="pub view label">Year:</label>
             <div class="pub field"> {{publication["year"]}}</div>
             <label class="pub view label">Files:</label>
-            <div class="pub field"> {{publication["files"]}}</div>
+            <div class="pub field">
+                {% for id, display_name, dowload_token in file_package %}
+                <a class="a downloadfile" href="{{PDF}}/download/{{id}}?token={{dowload_token}}">{{ display_name }}</a> {% endfor %}
+            </div>
         </fieldset>
 
         <div class="div return">
