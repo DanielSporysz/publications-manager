@@ -13,6 +13,12 @@ input.login {
     width: 100%;
 }
 
+input.login:focus {
+    outline: none;
+    border-color: #4bc970;
+    box-shadow: 0 0 10px #4bc970;
+}
+
 button.login {
     margin: 5px 0px;
     border: 1px;

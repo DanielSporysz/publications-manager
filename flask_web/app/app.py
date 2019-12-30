@@ -142,9 +142,10 @@ def view_publication(pid):
         return '<h1>PDF</h1> Missing publication id', 404
 
     session_id = request.cookies.get('session_id')
-    username = sessions_manager.get_session_user(session_id).decode()
+    username = sessions_manager.get_session_user(session_id)
 
     if sessions_manager.validate_session(session_id) and username is not None:
+        username = username.decode()
         publication_binary = cache.hget(username, pid)
         if publication_binary is None:
             return '<h1>PDF</h1> No such publication', 404
@@ -157,8 +158,7 @@ def view_publication(pid):
         print(type(list_of_file_ids), file=sys.stderr)
         print(type(list_of_file_ids), file=sys.stderr)
 
-        # fetching file names, publications contains only file ids
-
+        # fetching file names from PDF service, publication contains only file ids
         req = requests.get("http://pdf:5000/files/" + username
                            + "?token=" + tokens_manager.create_getFileList_token(username).decode())
         file_ids = []
@@ -167,6 +167,7 @@ def view_publication(pid):
         if req.status_code == 200:
             payload = req.json()
 
+            # preparing display names for files and download tokens
             for file_id in list_of_file_ids:
                 file_ids.append(file_id)
                 file_download_tokens.append(
@@ -185,6 +186,17 @@ def view_publication(pid):
     else:
         return my_redirect("/login")
 
+
+@app.route('/creator/publication/', methods=["GET"])
+def pub_creator():
+    session_id = request.cookies.get('session_id')
+    username = sessions_manager.get_session_user(session_id)
+
+    if sessions_manager.validate_session(session_id) and username is not None:
+        username = username.decode()
+        return render_template("createpublication.html", username=username)
+    else:
+        return my_redirect("/login")
 
 @app.route('/delete/publication/<pid>', methods=['POST'])
 def delete_publication(pid):
