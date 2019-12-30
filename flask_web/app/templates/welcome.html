@@ -34,10 +34,10 @@
             <a class="a downloadfile" href="{{PDF}}/download/{{fid}}?token={{ftoken}}">{{ fname }}</a>
 
 
-            <form class="del" action="{{PDF}}/delete/{{fid}}" method="POST" enctype="multipart/form-data">
+            <form class="option" action="{{PDF}}/delete/{{fid}}" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="token" value="{{deltoken}}" />
                 <input type="hidden" name="callback" value="{{WEB}}/callback-deletion" />
-                <button type="submit" class="del">
+                <button type="submit" class="option">
                     <img  class="trash" src="{{ url_for('static', filename='trash_small.svg') }}" />
                 </button>
             </form>
@@ -46,7 +46,7 @@
 
         <fieldset class="fieldset">
             <legend>Create a new publication:</legend>
-            <form class="del" action="/creator/publication/" method="GET" enctype="multipart/form-data">
+            <form class="option" action="/creator/publication" method="GET" enctype="multipart/form-data">
                 <button type="submit">
                     Open creator
                 </button>
@@ -56,10 +56,25 @@
         <fieldset class="fieldset">
             <legend>List of your publications:</legend>
             {% for pub_title, pub_id in publications %}
-            <a class="a downloadfile" href="{{WEB}}/publication/{{pub_id}}">{{pub_title}}</a>
+            <a class="a viewpub" href="{{WEB}}/publication/{{pub_id}}">{{pub_title}}</a>
 
-            <form class="del" action="{{WEB}}/delete/publication/{{pub_id}}" method="POST" enctype="multipart/form-data">
-                <button type="submit" class="del">
+            <form class="option" action="{{WEB}}/edit/publication/{{pub_id}}" method="GET" enctype="multipart/form-data">
+                <button type="submit" class="option">
+                    <img  class="trash" src="{{ url_for('static', filename='edit.svg') }}" />
+                </button>
+            </form>
+            <form class="option" action="{{WEB}}/welcome" method="GET" enctype="multipart/form-data">
+                <button type="submit" class="option">
+                    <img  class="trash" src="{{ url_for('static', filename='attach.svg') }}" />
+                </button>
+            </form>
+            <form class="option" action="{{WEB}}/welcome" method="GET" enctype="multipart/form-data">
+                <button type="submit" class="option">
+                    <img  class="trash" src="{{ url_for('static', filename='dettach.svg') }}" />
+                </button>
+            </form>
+            <form class="option" action="{{WEB}}/delete/publication/{{pub_id}}" method="POST" enctype="multipart/form-data">
+                <button type="submit" class="option">
                     <img  class="trash" src="{{ url_for('static', filename='trash_small.svg') }}" />
                 </button>
             </form>

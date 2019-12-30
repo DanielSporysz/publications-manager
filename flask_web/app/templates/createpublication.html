@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/welcome.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/pubview.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/callback.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pubcreate.css') }}">
 </head>
 
 <body>
@@ -21,22 +22,21 @@
         </div>
 
         <fieldset class="fieldset">
-            <legend>Publication:</legend>
-            <label class="pub view label">Title:</label>
-            <div class="pub field"> {{publication["title"]}}</div>
-            <label class="pub view label">Authors:</label>
-            <div class="pub field"> {{publication["authors"]}}</div>
-            <label class="pub view label">Publisher:</label>
-            <div class="pub field"> {{publication["publisher"]}}</div>
-            <label class="pub view label">Year:</label>
-            <div class="pub field"> {{publication["year"]}}</div>
-            <label class="pub view label">ID:</label>
-            <div class="pub field"> {{publication["id"]}}</div>
-            <label class="pub view label">Files:</label>
-            <div class="pub field">
-                {% for id, display_name, dowload_token in file_package %}
-                <a class="a downloadfile" href="{{PDF}}/download/{{id}}?token={{dowload_token}}">{{ display_name }}</a> {% endfor %}
-            </div>
+            <legend>New publication:</legend>
+            <form class="form login" action="/new/publication" method="POST">
+                <label> Title: </label>
+                <input class="pub field" type="text" name="title" placeholder="Title"></input>
+                <label> Authors: </label>
+                <input class="pub field" type="text" name="authors" placeholder="Authors"></input>
+                <label> Publisher: </label>
+                <input class="pub field" type="text" name="publisher" placeholder="Publisher"></input>
+                <label> Year: </label>
+                <input class="pub field" type="text" name="year" placeholder="Year"></input>
+                <label> Files: </label>
+                <input type="hidden" name="files" value=""></input>
+                <div class="pub info">Currently you can only attach or detach files via 'Attach file' or 'Detach file' options in your home page.</div>
+                <button class="create pub" type="submit">Create publication</button>
+            </form>
         </fieldset>
 
         <div class="div return">

@@ -20,15 +20,20 @@ button.sendfile {
     font-style: normal;
 }
 
+a.viewpub {
+    display: inline-block;
+    width: 69%;
+    margin-bottom: 5px;
+}
+
 a.downloadfile {
     display: inline-block;
     width: 89%;
     margin-bottom: 5px;
 }
 
-form.del {
+form.option {
     display: inline-block;
-    width: 10%;
 }
 
 img.trash {

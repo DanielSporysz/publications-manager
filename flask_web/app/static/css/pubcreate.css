@@ -1,0 +1,30 @@
+input.pub.field {
+    margin: 10px 5px;
+    border: 1px;
+    padding: 10px;
+    width: 100%;
+}
+
+input.pub.field:focus {
+    outline: none;
+    border-color: #1e90ff;
+    box-shadow: 0 0 10px #1e90ff;
+}
+
+button.create.pub {
+    margin: 10px 5px;
+    border: 1px;
+    padding: 10px;
+    width: 100%;
+    color: #FFF;
+    background-color: #1e90ff;
+    text-align: center;
+    font-style: normal;
+}
+
+div.pub.info {
+    margin: 10px 5px;
+    border: 1px;
+    padding: 10px;
+    width: 100%;
+}

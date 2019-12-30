@@ -1,0 +1,53 @@
+<!doctype html>
+
+<head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sharedstyle.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/welcome.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pubview.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/callback.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pubcreate.css') }}">
+</head>
+
+<body>
+    <h1 class="h1 maintitle">WEB APP</h1>
+    <div class="div welcome">
+        <div class="div user">
+            You are logged in as <b>{{username}}</b>!
+            <form class="form logout" action="/logout" method="GET">
+                <button class="button logout" type="submit">Log out</button>
+            </form>
+        </div>
+
+        <fieldset class="fieldset">
+            <legend>Edit publication:</legend>
+            <form class="form login" action="/update/publication" method="POST">
+                <label> Title: </label>
+                <input class="pub field" type="text" name="title" placeholder="Title" value="{{pub['title']}}"></input>
+                <label> Authors: </label>
+                <input class="pub field" type="text" name="authors" placeholder="Authors" value="{{pub['authors']}}"></input>
+                <label> Publisher: </label>
+                <input class="pub field" type="text" name="publisher" placeholder="Publisher" value="{{pub['publisher']}}"></input>
+                <label> Year: </label>
+                <input class="pub field" type="text" name="year" placeholder="Year" value="{{pub['year']}}"></input>
+                <label> ID: </label>
+                <div class="pub info">{{pub["id"]}}</div>
+                <label> Files: </label>
+                <input type="hidden" name="files" value="{{pub['files']}}"></input>
+                {% for file_id in list_of_file_ids %}
+                <div class="pub info">{{file_id}}</div>
+                {% endfor %}
+                <div class="pub info">Currently you can only attach or detach files via 'Attach file' or 'Detach file' options in your home page.</div>
+                <button class="create pub" type="submit">Update publication</button>
+            </form>
+        </fieldset>
+
+        <div class="div return">
+            <form class="form return" action="/welcome" method="GET">
+                <button class="button return" type="submit">Return to homepage</button>
+            </form>
+        </div>
+    </div>
+</body>

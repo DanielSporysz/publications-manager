@@ -77,7 +77,7 @@ def welcome():
         list_token = tokens_manager.create_getFileList_token(
             username.decode()).decode('ascii')
         zip_of_file_list = get_zip_of_file_list(username.decode(), list_token)
-        publications = get_pub_list(username)
+        publications = get_zip_of_pub_list(username)
 
         return render_template("welcome.html", package=zip_of_file_list,
                                upload_token=upload_token, PDF=PDF, WEB=WEB,
@@ -86,7 +86,7 @@ def welcome():
         return my_redirect("/login")
 
 
-def get_pub_list(username):
+def get_zip_of_pub_list(username):
     publications_titles = []
     publications_ids = []
 
@@ -151,7 +151,7 @@ def view_publication(pid):
             return '<h1>PDF</h1> No such publication', 404
 
         publication = json.loads(publication_binary.decode())
-        list_of_file_ids = publication["files"].replace(
+        list_of_file_ids = str(publication["files"]).replace(
             '[', '').replace(']', '').replace(',', '').split()
         print(type(list_of_file_ids), file=sys.stderr)
         print(type(list_of_file_ids), file=sys.stderr)
@@ -187,7 +187,65 @@ def view_publication(pid):
         return my_redirect("/login")
 
 
-@app.route('/creator/publication/', methods=["GET"])
+@app.route('/new/publication', methods=['POST'])
+def new_publication():
+    session_id = request.cookies.get('session_id')
+    username = sessions_manager.get_session_user(session_id)
+
+    if sessions_manager.validate_session(session_id) and username is not None:
+        username = username.decode()
+
+        title = request.form.get("title")
+        authors = request.form.get("authors")
+        publisher = request.form.get("publisher")
+        year = request.form.get("year")
+        files = request.form.get("files")
+
+        if not title or not authors or not year or not publisher:
+            return '<h1>WEB</h1> Incorrect request. The form must contain title, authors, publisher and year fields.', 400
+
+        # saving a publication
+        try:
+            pid = str(uuid4())
+            pub = {"id": pid, "title": title, "authors": authors, "year": year,
+                   "publisher": publisher, "files": files}
+            cache.hset(username, pid, json.dumps(pub))
+
+            msg = "New publication has been created successfully."
+            return render_template("callback.html", msg=msg, username=username)
+        except:
+            return '<h1>WEB</h1> Error during posting a publication.', 500
+    else:
+        return my_redirect("/login")
+
+
+@app.route('/edit/publication/<pid>', methods=["GET"])
+def edit_pub(pid):
+    if len(pid) == 0:
+        return '<h1>PDF</h1> Missing publication id.', 404
+
+    session_id = request.cookies.get('session_id')
+    username = sessions_manager.get_session_user(session_id)
+
+    if sessions_manager.validate_session(session_id) and username is not None:
+        username = username.decode()
+
+        if pid.encode() not in cache.hkeys(username):
+            return '<h1>PDF</h1> Publication not found.', 404
+
+        string_pub = cache.hget(username, pid).decode()
+        pub = json.loads(string_pub)
+        list_of_file_ids = str(pub["files"]).replace(
+            '[', '').replace(']', '').replace(',', '').split()
+
+        for f in pub["files"]:
+            print(f, file=sys.stderr)
+        return render_template("editpub.html", username=username, pub=pub, list_of_file_ids=list_of_file_ids)
+    else:
+        return my_redirect("/login")
+
+
+@app.route('/creator/publication', methods=["GET"])
 def pub_creator():
     session_id = request.cookies.get('session_id')
     username = sessions_manager.get_session_user(session_id)
@@ -197,6 +255,7 @@ def pub_creator():
         return render_template("createpublication.html", username=username)
     else:
         return my_redirect("/login")
+
 
 @app.route('/delete/publication/<pid>', methods=['POST'])
 def delete_publication(pid):
