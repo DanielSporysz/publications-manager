@@ -1,9 +1,4 @@
-from flask import Flask
-from flask import request
-from flask import make_response
-from flask import render_template
-from flask import jsonify
-from flask import redirect
+from flask import Flask, request, make_response, render_template, jsonify, redirect
 from uuid import uuid4
 from ast import literal_eval
 import json
@@ -28,9 +23,10 @@ JWT_SECRET = getenv("JWT_SECRET")
 INVALIDATE = -1
 
 cache = redis.Redis(host='web_db', port=6379, db=0)
+
 usrs_manager = rusers.UsersManager(cache)
 usrs_manager.init_redis_with_users()  # DEV method
-sessions_manager = rsessions.SessionsManager(cache)
+sessions_manager = rsessions.SessionsManager(cache, SESSION_TIME)
 tokens_manager = tokenscrt.TokenCreator(JWT_SESSION_TIME, JWT_SECRET)
 
 
