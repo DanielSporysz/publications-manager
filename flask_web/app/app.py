@@ -433,7 +433,7 @@ def chose_dettachment(pid):
             if fid in all_fids:
                 display_names.append(payload[fid])
             else:
-                display_names.append(None)
+                display_names.append("FILE HAS BEEN DELETED")
 
         return render_template("dettachfile.html", username=username, pub=pub, files=zip(already_attached_fids, display_names))
 

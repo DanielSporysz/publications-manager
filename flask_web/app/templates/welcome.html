@@ -31,13 +31,13 @@
         <fieldset class="fieldset">
             <legend>List of your files:</legend>
             {% for fname, fid, ftoken, deltoken in package %}
-            <a class="a downloadfile" href="{{PDF}}/download/{{fid}}?token={{ftoken}}">{{ fname }}</a>
+            <a class="a downloadfile" href="{{PDF}}/download/{{fid}}?token={{ftoken}}" title="click to download file">{{ fname }}</a>
 
 
             <form class="option" action="{{PDF}}/delete/{{fid}}" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="token" value="{{deltoken}}" />
                 <input type="hidden" name="callback" value="{{WEB}}/callback-deletion" />
-                <button type="submit" class="option">
+                <button type="submit" title="delete file" class="option">
                     <img  class="trash" src="{{ url_for('static', filename='trash_small.svg') }}" />
                 </button>
             </form>
@@ -56,24 +56,24 @@
         <fieldset class="fieldset">
             <legend>List of your publications:</legend>
             {% for pub_title, pub_id in publications %}
-            <a class="a viewpub" href="{{WEB}}/publication/{{pub_id}}">{{pub_title}}</a>
+            <a class="a viewpub" href="{{WEB}}/publication/{{pub_id}}" title="click to view publication">{{pub_title}}</a>
 
-            <form class="option" action="{{WEB}}/edit/publication/{{pub_id}}" method="GET" enctype="multipart/form-data">
+            <form class="option" title="edit publication" action="{{WEB}}/edit/publication/{{pub_id}}" method="GET" enctype="multipart/form-data">
                 <button type="submit" class="option">
                     <img  class="trash" src="{{ url_for('static', filename='edit.svg') }}" />
                 </button>
             </form>
-            <form class="option" action="{{WEB}}/attach-file-chooser/publication/{{pub_id}}" method="GET" enctype="multipart/form-data">
+            <form class="option" title="attach file" action="{{WEB}}/attach-file-chooser/publication/{{pub_id}}" method="GET" enctype="multipart/form-data">
                 <button type="submit" class="option">
                     <img  class="trash" src="{{ url_for('static', filename='attach.svg') }}" />
                 </button>
             </form>
-            <form class="option" action="{{WEB}}/dettach-file-chooser/publication/{{pub_id}}" method="GET" enctype="multipart/form-data">
+            <form class="option" title="dettach file" action="{{WEB}}/dettach-file-chooser/publication/{{pub_id}}" method="GET" enctype="multipart/form-data">
                 <button type="submit" class="option">
                     <img  class="trash" src="{{ url_for('static', filename='dettach.svg') }}" />
                 </button>
             </form>
-            <form class="option" action="{{WEB}}/delete/publication/{{pub_id}}" method="POST" enctype="multipart/form-data">
+            <form class="option" title="delete publication" action="{{WEB}}/delete/publication/{{pub_id}}" method="POST" enctype="multipart/form-data">
                 <button type="submit" class="option">
                     <img  class="trash" src="{{ url_for('static', filename='trash_small.svg') }}" />
                 </button>
