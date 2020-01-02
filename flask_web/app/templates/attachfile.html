@@ -1,0 +1,45 @@
+<!doctype html>
+
+<head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sharedstyle.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/welcome.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pubview.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/callback.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pubcreate.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/attachfile.css') }}">
+</head>
+
+<body>
+    <h1 class="h1 maintitle">WEB APP</h1>
+    <div class="div welcome">
+        <div class="div user">
+            You are logged in as <b>{{username}}</b>!
+            <form class="form logout" action="/logout" method="GET">
+                <button class="button logout" type="submit">Log out</button>
+            </form>
+        </div>
+
+        <fieldset class="fieldset">
+            <legend>Choose a file to attach to "{{pub["title"]}}":</legend>
+            {% for fid, display_name in files %}
+            <label class="file attach">{{display_name}} ({{fid}})</label>
+
+            <form class="option" action="{{WEB}}/attach-file/publication/{{pub['id']}}" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="fid" value="{{fid}}"></input>
+                <button type="submit" class="option">
+                    <img  class="trash" src="{{ url_for('static', filename='attach.svg') }}" />
+                </button>
+            </form>
+            {% endfor %}
+        </fieldset>
+
+        <div class="div return">
+            <form class="form return" action="/welcome" method="GET">
+                <button class="button return" type="submit">Return to homepage</button>
+            </form>
+        </div>
+    </div>
+</body>

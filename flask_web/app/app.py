@@ -265,12 +265,8 @@ def update_publication(pid):
 
         # saving a publication
         try:
-            print(cache.hkeys(username), file=sys.stderr)
-            print(cache.hkeys(username), file=sys.stderr)
-            print(cache.hkeys(username), file=sys.stderr)
-            print(cache.hkeys(username), file=sys.stderr)
             if pid.encode() not in cache.hkeys(username):
-                return '<h1>WEB</h1> There is no such publication.', 404
+                return '<h1>WEB</h1> There is no such publication on your list: ' + pid, 404
 
             pub = {"id": pid, "title": title, "authors": authors, "year": year,
                    "publisher": publisher, "files": files}
@@ -307,13 +303,101 @@ def delete_publication(pid):
     if sessions_manager.validate_session(session_id) and username is not None:
         try:
             if pid.encode() not in cache.hkeys(username):
-                return '<h1>WEB</h1> There is no such publication.', 404
+                return '<h1>WEB</h1> There is no such publication on your list: ' + pid, 404
 
             cache.hdel(username, pid)
             msg = "Publication " + pid + " has been deleted successfully."
         except:
             msg = "An error occured while deleting a publication!"
         return render_template("callback.html", msg=msg, username=username.decode())
+    else:
+        return my_redirect("/login")
+
+
+@app.route('/attach-file-chooser/publication/<pid>', methods=['GET'])
+def chose_attachment(pid):
+    if len(pid) == 0:
+        return '<h1>PDF</h1> Missing publication id', 404
+
+    session_id = request.cookies.get('session_id')
+    username = sessions_manager.get_session_user(session_id)
+
+    if sessions_manager.validate_session(session_id) and username is not None:
+        username = username.decode()
+
+        if pid.encode() not in cache.hkeys(username):
+            return '<h1>WEB</h1> There is no such publication on your list: ' + pid, 404
+
+        string_pub = cache.hget(username, pid).decode()
+        pub = json.loads(string_pub)
+        already_attached_fids = str(pub["files"]).replace(
+            '[', '').replace(']', '').replace(',', '').split()
+
+        # fetching all user files from PDF server
+        list_token = tokens_manager.create_getFileList_token(
+            username).decode('ascii')
+        req = requests.get("http://pdf:5000/files/" +
+                           username + "?token=" + list_token)
+        if req.status_code == 200:
+            payload = req.json()
+            all_fids = payload.keys()
+
+            fids = [x for x in all_fids if x not in already_attached_fids]
+            display_names = []
+            for fid in fids:
+                display_names.append(payload[fid])
+
+            return render_template("attachfile.html", username=username, pub=pub, files=zip(fids, display_names))
+        else:
+            return '<h1>WEB</h1> There has been an error fetching list of your files.', 500
+    else:
+        return my_redirect("/login")
+
+
+@app.route('/attach-file/publication/<pid>', methods=['POST'])
+def attach_file(pid):
+    if len(pid) == 0:
+        return '<h1>PDF</h1> Missing publication id', 404
+    fid = request.form.get('fid')
+    if fid is None:
+        return '<h1>PDF</h1> The form is missing file id to attach.', 400
+    session_id = request.cookies.get('session_id')
+    username = sessions_manager.get_session_user(session_id)
+
+    if sessions_manager.validate_session(session_id) and username is not None:
+        username = username.decode()
+
+        if pid.encode() not in cache.hkeys(username):
+            return '<h1>WEB</h1> There is no such publication on your list: ' + pid, 404
+
+        # veryfing if the file belongs to the user
+        list_token = tokens_manager.create_getFileList_token(
+            username).decode('ascii')
+        req = requests.get("http://pdf:5000/files/" +
+                           username + "?token=" + list_token)
+        if req.status_code == 200:
+            payload = req.json()
+            user_files = payload.keys()
+
+            if fid not in user_files:
+                return '<h1>WEB</h1> You cannot attach files you do not own.', 403
+        else:
+            return '<h1>WEB</h1> There has been an error verifying if the file to attach belongs to you.', 500
+
+        # adding fid to publication
+        string_pub = cache.hget(username, pid).decode()
+        pub = json.loads(string_pub)
+        already_attached_fids = str(pub["files"]).replace(
+            '[', '').replace(']', '').replace(',', '').split()
+        already_attached_fids.append(fid)
+        pub["files"] = str(already_attached_fids).replace("'", '')
+        cache.hset(username, pid, json.dumps(pub))
+
+        print(already_attached_fids, file=sys.stderr)
+
+        msg = 'File ' + fid + ' has been attached to \"' + \
+            pub["title"] + '\" successfully.'
+        return render_template("callback.html", msg=msg, username=username)
     else:
         return my_redirect("/login")
 
