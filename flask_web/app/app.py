@@ -68,16 +68,16 @@ def welcome():
     username = sessions_manager.get_session_user(session_id)
 
     if sessions_manager.validate_session(session_id) and username is not None:
+        username = username.decode()
         upload_token = tokens_manager.create_upload_token(
-            username.decode()).decode('ascii')
-        list_token = tokens_manager.create_getFileList_token(
-            username.decode()).decode('ascii')
-        zip_of_file_list = get_zip_of_file_list(username.decode(), list_token)
+            username).decode('ascii')
+
+        files = get_zip_of_file_list(username)
         publications = get_zip_of_pub_list(username)
 
-        return render_template("welcome.html", package=zip_of_file_list,
+        return render_template("welcome.html", package=files,
                                upload_token=upload_token, PDF=PDF, WEB=WEB,
-                               username=username.decode(), publications=publications)
+                               username=username, publications=publications)
     else:
         return my_redirect("/login")
 
@@ -86,6 +86,7 @@ def get_zip_of_pub_list(username):
     publications_titles = []
     publications_ids = []
 
+    username = username.encode()
     pub_ids = cache.hkeys(username)
     if pub_ids is not None:
         for pid in pub_ids:
@@ -98,7 +99,10 @@ def get_zip_of_pub_list(username):
     return zip(publications_titles, publications_ids)
 
 
-def get_zip_of_file_list(username, list_token):
+def get_zip_of_file_list(username):
+    list_token = tokens_manager.create_getFileList_token(
+        username).decode('ascii')
+
     req = requests.get("http://pdf:5000/files/" +
                        username + "?token=" + list_token)
 
@@ -149,10 +153,6 @@ def view_publication(pid):
         publication = json.loads(publication_binary.decode())
         list_of_file_ids = str(publication["files"]).replace(
             '[', '').replace(']', '').replace(',', '').split()
-        print(type(list_of_file_ids), file=sys.stderr)
-        print(type(list_of_file_ids), file=sys.stderr)
-        print(type(list_of_file_ids), file=sys.stderr)
-        print(type(list_of_file_ids), file=sys.stderr)
 
         # fetching file names from PDF service, publication contains only file ids
         req = requests.get("http://pdf:5000/files/" + username
@@ -163,17 +163,19 @@ def view_publication(pid):
         if req.status_code == 200:
             payload = req.json()
 
-            # preparing display names for files and download tokens
-            for file_id in list_of_file_ids:
-                file_ids.append(file_id)
-                file_download_tokens.append(
-                    tokens_manager.create_download_token(username, file_id).decode())
-                if file_id in payload.keys():
-                    file_display_names.append(
-                        payload[file_id] + " (" + file_id + ")")
-                else:
-                    file_display_names.append(
-                        "FILE HAS BEEN DELETED (" + file_id + ")")
+        # preparing display names for files and download tokens
+        for file_id in list_of_file_ids:
+            file_ids.append(file_id)
+            file_download_tokens.append(
+                tokens_manager.create_download_token(username, file_id).decode())
+            if req.status_code == 200 and file_id in payload.keys():
+                file_display_names.append(
+                    payload[file_id] + " (" + file_id + ")")
+            elif req.status_code != 200:
+                file_display_names.append(file_id)
+            else:
+                file_display_names.append(
+                    "FILE HAS BEEN DELETED (" + file_id + ")")
 
         return render_template("viewpublication.html", username=username,
                                publication=publication, file_package=zip(file_ids,
@@ -216,7 +218,7 @@ def new_publication():
 
 
 @app.route('/edit/publication/<pid>', methods=["GET"])
-def edit_pub(pid):
+def publication_editor(pid):
     if len(pid) == 0:
         return '<h1>PDF</h1> Missing publication id.', 404
 
@@ -236,13 +238,54 @@ def edit_pub(pid):
 
         for f in pub["files"]:
             print(f, file=sys.stderr)
-        return render_template("editpub.html", username=username, pub=pub, list_of_file_ids=list_of_file_ids)
+        return render_template("editpub.html", username=username, pid=pid, pub=pub, list_of_file_ids=list_of_file_ids)
+    else:
+        return my_redirect("/login")
+
+
+@app.route('/update/publication/<pid>', methods=['POST'])
+def update_publication(pid):
+    if len(pid) == 0:
+        return '<h1>PDF</h1> Missing publication id.', 404
+
+    session_id = request.cookies.get('session_id')
+    username = sessions_manager.get_session_user(session_id)
+
+    if sessions_manager.validate_session(session_id) and username is not None:
+        username = username.decode()
+
+        title = request.form.get("title")
+        authors = request.form.get("authors")
+        publisher = request.form.get("publisher")
+        year = request.form.get("year")
+        files = request.form.get("files")
+
+        if not title or not authors or not year or not publisher:
+            return '<h1>WEB</h1> Incorrect request. The form must contain title, authors, publisher and year fields.', 400
+
+        # saving a publication
+        try:
+            print(cache.hkeys(username), file=sys.stderr)
+            print(cache.hkeys(username), file=sys.stderr)
+            print(cache.hkeys(username), file=sys.stderr)
+            print(cache.hkeys(username), file=sys.stderr)
+            if pid.encode() not in cache.hkeys(username):
+                return '<h1>WEB</h1> There is no such publication.', 404
+
+            pub = {"id": pid, "title": title, "authors": authors, "year": year,
+                   "publisher": publisher, "files": files}
+            cache.hset(username, pid, json.dumps(pub))
+
+            msg = "Publication has been updated successfully."
+            return render_template("callback.html", msg=msg, username=username)
+        except:
+            return '<h1>WEB</h1> Error during updating a publication.', 500
     else:
         return my_redirect("/login")
 
 
 @app.route('/creator/publication', methods=["GET"])
-def pub_creator():
+def publication_creator():
     session_id = request.cookies.get('session_id')
     username = sessions_manager.get_session_user(session_id)
 
@@ -263,6 +306,9 @@ def delete_publication(pid):
 
     if sessions_manager.validate_session(session_id) and username is not None:
         try:
+            if pid.encode() not in cache.hkeys(username):
+                return '<h1>WEB</h1> There is no such publication.', 404
+
             cache.hdel(username, pid)
             msg = "Publication " + pid + " has been deleted successfully."
         except:

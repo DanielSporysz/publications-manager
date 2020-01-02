@@ -3,6 +3,7 @@ from uuid import uuid4
 import datetime
 import sys
 
+
 class SessionsManager:
     def __init__(self, cache, max_session_age):
         self.cache = cache
@@ -31,9 +32,11 @@ class SessionsManager:
 
     def validate_session(self, session_id):
         if session_id is not None and self.cache.hget(self.sessions_key_to_redis, session_id) is not None:
-            str_session_age = self.cache.hget(self.session_age_key_to_redis, session_id).decode()
+            str_session_age = self.cache.hget(
+                self.session_age_key_to_redis, session_id).decode()
             dt_format = "%Y-%m-%d %H:%M:%S.%f"
-            session_age = datetime.datetime.strptime(str_session_age, dt_format)
+            session_age = datetime.datetime.strptime(
+                str_session_age, dt_format)
 
             if session_age > datetime.datetime.now():
                 return True

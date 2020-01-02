@@ -23,7 +23,7 @@
 
         <fieldset class="fieldset">
             <legend>Edit publication:</legend>
-            <form class="form login" action="/update/publication" method="POST">
+            <form class="form login" action="/update/publication/{{pid}}" method="POST">
                 <label> Title: </label>
                 <input class="pub field" type="text" name="title" placeholder="Title" value="{{pub['title']}}"></input>
                 <label> Authors: </label>
