@@ -1,8 +1,8 @@
 # WEB-P2
 
-WEB service that offers file hosting and storing publications.
+WEB service that offers file hosting and publication posting.
 
-The repository also contains desktop JAVAFX client for WEB service 
+The repository also contains desktop JAVAFX client for WEB service in \PublicationsManager.
 
 For development purposes, user database is initialised with 2 users on start up:
 [login, passwword]
@@ -17,7 +17,7 @@ The service listens on port 443 and is set to use the following domain names:
 
 Java client:
 - written in Java 8 with JAVAFX library,
-- Add the certifices to java trusted CNs store (or disable trsuted CA checking in JVM)
+- Add the certifices to java trusted CNs store (or disable trusted CA checking in JVM)
   server certificate is localed in \SSL catalog 
 	
 Suggested way of adding the server ceritficate:
