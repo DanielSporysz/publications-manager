@@ -137,11 +137,17 @@ public class APIConnector {
         }
     }
 
-    private Map<String, String> getMapFromResponse(Connection.Response response) throws JsonProcessingException, APIException {
+    private Map<String, String> getMapFromResponse(Connection.Response response) throws APIException {
         if (response.statusCode() == 201) {
             ObjectMapper mapper = new ObjectMapper();
             String json = response.body();
-            Map<String, String> map = mapper.readValue(json, Map.class);
+            Map<String, String> map = null;
+            try {
+                map = mapper.readValue(json, Map.class);
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw new APIException("There's been an error parsing the response from server.");
+            }
             return map;
         } else {
             throw new APIException("Server responded with unknown response.");

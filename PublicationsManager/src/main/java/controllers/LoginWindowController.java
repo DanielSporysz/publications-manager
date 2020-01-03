@@ -60,7 +60,10 @@ public class LoginWindowController {
         } catch (APIException e) {
             if (e.getMessage().equals("HTTP error fetching URL")) {
                 showErrorMessage("Incorrect credentials");
+            } else if (e.getMessage().equals("sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target")){
+                showErrorMessage("Add server certificate to java trusted roots!");
             } else {
+                e.printStackTrace();
                 showErrorMessage(e.getMessage());
             }
             return;

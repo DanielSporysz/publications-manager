@@ -268,7 +268,7 @@ public class MainWindowController {
                 try {
                     Map<String, String> map = mapper.readValue(json, Map.class);
                     items.add(map.get("title") + " (" + entry.getKey() + ")");
-                } catch (JsonProcessingException e) {
+                } catch (IOException e) {
                     System.err.println("Could not extract publication title. The pub list is missing elements.");
                 }
             }
@@ -380,7 +380,7 @@ public class MainWindowController {
             ObjectMapper mapper = new ObjectMapper();
             publication = mapper.readValue(stringPublication, Map.class);
             return publication;
-        } catch (JsonProcessingException e) {
+        } catch (IOException e) {
             System.err.println("currentPubAsMap: could not map publication");
             return null;
         }
