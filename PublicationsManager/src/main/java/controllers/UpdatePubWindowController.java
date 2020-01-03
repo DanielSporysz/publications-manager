@@ -159,7 +159,11 @@ public class UpdatePubWindowController {
 
         // Pass data
         AddFileToPubWindowController controller = loader.getController();
-        controller.init(newWindow, allUserFiles, this);
+        Map<String, String> filesToAttach = new HashMap<String, String>(allUserFiles);
+        for (String fid : attachedFilesIds){
+            filesToAttach.remove(fid);
+        }
+        controller.init(newWindow, filesToAttach, this);
     }
 
     @FXML
