@@ -17,7 +17,7 @@ The service listens on port 443 and is set to use the following domain names:
 
 Java client:
 - written in Java 8 with JAVAFX library,
-- Add the certifices to java trusted CNs store (or disable trsuted CA checking in JVM)
+- Add web.crt and pdf.crt certifices to java trusted CNs store (or disable trsuted CA checking in JVM)
   server certificate is localed in \SSL catalog 
 	
 Suggested way of adding the server ceritficate:

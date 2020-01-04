@@ -12,6 +12,8 @@ services:
       - ./nginx-uwsgi.conf:/etc/nginx/nginx.conf
       - ./SSL/web.key:/etc/nginx/web.key
       - ./SSL/web.crt:/etc/nginx/web.crt
+      - ./SSL/pdf.key:/etc/nginx/pdf.key
+      - ./SSL/pdf.crt:/etc/nginx/pdf.crt
 
 
   web:

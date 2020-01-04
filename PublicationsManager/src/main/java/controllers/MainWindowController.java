@@ -69,6 +69,7 @@ public class MainWindowController {
                 break;
             } catch (APIException e) {
                 //e.printStackTrace();
+                System.err.println("Resending request with new auth token.");
                 requestAttempts--;
                 try {
                     credentials.setUToken(connector.fetchAuthToken(credentials.getLogin(), credentials.getPassword()));
@@ -116,6 +117,8 @@ public class MainWindowController {
             deleteFileButton.setDisable(false);
             downloadButton.setDisable(false);
         }
+
+        System.err.println(currentlySelectedFileID);
     }
 
     @FXML
@@ -134,6 +137,7 @@ public class MainWindowController {
                 break;
             } catch (APIException e) {
                 //e.printStackTrace();
+                System.err.println("Resending request with new auth token.");
                 requestAttempts--;
                 try {
                     credentials.setUToken(connector.fetchAuthToken(credentials.getLogin(), credentials.getPassword()));
@@ -177,6 +181,7 @@ public class MainWindowController {
                 break;
             } catch (APIException e) {
                 //e.printStackTrace();
+                System.err.println("Resending request with new auth token.");
                 requestAttempts--;
                 try {
                     credentials.setUToken(connector.fetchAuthToken(credentials.getLogin(), credentials.getPassword()));
@@ -224,6 +229,7 @@ public class MainWindowController {
                     break;
                 } catch (APIException e) {
                     //e.printStackTrace();
+                    System.err.println("Resending request with new auth token.");
                     requestAttempts--;
                     try {
                         credentials.setUToken(connector.fetchAuthToken(credentials.getLogin(), credentials.getPassword()));
@@ -249,6 +255,7 @@ public class MainWindowController {
                 break;
             } catch (APIException e) {
                 //e.printStackTrace();
+                System.err.println("Resending request with new auth token.");
                 requestAttempts--;
                 try {
                     credentials.setUToken(connector.fetchAuthToken(credentials.getLogin(), credentials.getPassword()));
@@ -350,6 +357,7 @@ public class MainWindowController {
                 break;
             } catch (APIException e) {
                 //e.printStackTrace();
+                System.err.println("Resending request with new auth token.");
                 requestAttempts--;
                 try {
                     credentials.setUToken(connector.fetchAuthToken(credentials.getLogin(), credentials.getPassword()));

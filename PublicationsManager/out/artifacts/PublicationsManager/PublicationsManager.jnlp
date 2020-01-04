@@ -8,7 +8,7 @@
   </information>
   <resources>
     <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
-    <jar href="PublicationsManager.jar" size="59335" download="eager" />
+    <jar href="PublicationsManager.jar" size="59472" download="eager" />
     <jar href="jackson-annotations-2.9.10.jar" size="66894" download="eager" />
     <jar href="jackson-core-2.9.10.jar" size="325636" download="eager" />
     <jar href="jackson-databind-2.9.10.jar" size="1348567" download="eager" />

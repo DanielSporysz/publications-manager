@@ -46,7 +46,7 @@ public class APIConnector {
     public BufferedInputStream downloadFile(WEBCredentials credentials, String fid) throws APIException {
         try {
             Connection.Response response =
-                    Jsoup.connect(url + "/file-list")
+                    Jsoup.connect(url + "/file/download")
                             .userAgent("Mozilla")
                             .timeout(10 * 1000)
                             .method(Connection.Method.GET)
@@ -57,12 +57,13 @@ public class APIConnector {
                             .maxBodySize(0)
                             .execute();
 
-            if (response.statusCode() == 201) {
+            if (response.statusCode() == 200) {
                 return response.bodyStream();
             } else {
                 throw new APIException("Server responded with unknown response.");
             }
         } catch (IOException e) {
+            e.printStackTrace();
             throw new APIException(e.getLocalizedMessage());
         }
     }
@@ -87,16 +88,19 @@ public class APIConnector {
 
     public void uploadFile(WEBCredentials credentials, File file) throws APIException {
         try {
+            FileInputStream upFile = new FileInputStream(file);
             Connection.Response response =
                     Jsoup.connect(url + "/file/upload")
                             .userAgent("Mozilla")
                             .timeout(10 * 1000)
                             .method(Connection.Method.POST)
                             .data("auth_token", credentials.getUToken())
-                            .data("file", file.getName(), new FileInputStream(file))
+                            .data("file", file.getName(), upFile)
                             .followRedirects(true)
                             .ignoreContentType(true)
                             .execute();
+
+            upFile.close();
         } catch (IOException e) {
             throw new APIException(e.getLocalizedMessage());
         }

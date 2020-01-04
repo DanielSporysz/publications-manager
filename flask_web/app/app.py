@@ -703,7 +703,7 @@ def download_file():
         return '<h1>WEB</h1> Incorrect token', 401
     download_token = tokens_manager.create_download_token(username, fid)
 
-    return redirect("https://web.company.com/download/" + fid + "?token=" + download_token.decode(), code=302)
+    return redirect("https://pdf.company.com/download/" + fid + "?token=" + download_token.decode(), code=303)
 
 
 @app.route('/api/file/upload', methods=['POST'])

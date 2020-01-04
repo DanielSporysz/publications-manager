@@ -93,7 +93,7 @@ def upload():
             cache.set(fid, fn)
             # cache.bgsave()
         return redirect(f"{c}?filename={f.filename}&fid={fid}") if c \
-            else (f'<h1>PDF</h1> Uploaded {f.filename} - {fid}', 200)
+            else (f'<h1>PDF</h1> Uploaded {f.filename} - {fid}', 201)
     except:
         return redirect(f"{c}?error=Error+while+saving+a+file") if c \
             else ('<h1>PDF</h1> Error while saving a file', 500)
