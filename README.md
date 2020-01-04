@@ -1,8 +1,8 @@
 # WEB-P2
 
-WEB service that offers file hosting and storing publications.
+WEB service that offers file hosting and publication posting.
 
-The repository also contains desktop JAVAFX client for WEB service 
+The repository also contains desktop JAVAFX client for WEB service in \PublicationsManager.
 
 For development purposes, user database is initialised with 2 users on start up:
 [login, passwword]
