@@ -136,6 +136,19 @@ def logout():
     return response
 
 
+@app.route('/account', methods=['GET'])
+def account_management():
+    session_id = request.cookies.get('session_id')
+    username = sessions_manager.get_session_user(session_id)
+
+    if sessions_manager.validate_session(session_id) and username is not None:
+        username = username.decode()
+
+        return render_template("account.html", PDF=PDF, WEB=WEB, username=username)
+    else:
+        return my_redirect("/login")
+
+
 @app.route('/publication/<pid>', methods=['GET'])
 def view_publication(pid):
     if len(pid) == 0:

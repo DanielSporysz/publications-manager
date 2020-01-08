@@ -13,8 +13,12 @@
     <div class="div welcome">
         <div class="div user">
             Welcome <b>{{username}}</b>!
+
             <form class="form logout" action="/logout" method="GET">
                 <button class="button logout" type="submit">Log out</button>
+            </form>
+            <form class="form account" action="/account" method="GET">
+                <button class="button account" type="submit">Account</button>
             </form>
         </div>
 

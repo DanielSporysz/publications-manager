@@ -1,0 +1,34 @@
+<!doctype html>
+
+<head>
+    <meta charset="utf-8" />
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sharedstyle.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/callback.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/welcome.css') }}">
+</head>
+
+<body>
+    <h1 class="h1 maintitle">WEB APP</h1>
+    <div class="div callback">
+        <div class="div user">
+            As <b>{{username}}</b>:
+            <form class="form logout" action="/logout" method="GET">
+                <button class="button logout" type="submit">Log out</button>
+            </form>
+        </div>
+
+        <fieldset class="fieldset">
+            <legend>Manage your account:</legend>
+            <form action="{{WEB}}/welcome" method="GET" enctype="multipart/form-data">
+                <button type="submit">Change password</button>
+            </form>
+        </fieldset>
+
+        <div class="div return">
+            <form class="form return" action="/welcome" method="GET">
+                <button class="button return" type="submit">Return to homepage</button>
+            </form>
+        </div>
+    </div>
+</body>

@@ -7,16 +7,26 @@ h1.maintitle {
     text-align: center;
 }
 
+form.account,
 form.logout {
     display: inline;
 }
 
+button.account,
 button.logout {
     float: right;
     color: #FFF;
-    background-color: #ee5034;
     text-align: center;
     font-style: normal;
+}
+
+button.logout {
+    background-color: #ee5034;
+}
+
+button.account {
+    background-color: #4d4dff;
+    margin-right: 10px;
 }
 
 body {
