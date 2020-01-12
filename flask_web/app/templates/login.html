@@ -16,10 +16,7 @@
             <input class="input login" type="password" name="password" placeholder="Password"></input>
             <button class="button login" type="submit">Log in</button>
         </form>
-        <form action="https://dev-0n-bx69c.eu.auth0.com/authorize?" method="GET" class="auth0">
-            <input type="hidden" name="redirect_uri" value="https://web.company.com/welcome?"></input>
-            <input type="hidden" name="response_type" value="code"></input>
-            <input type="hidden" name="client_id" value="SXlXXOn4ITx5BrW6xcB9ltVDKvSv0lMk"></input>
+        <form action="/auth0-redirect" method="GET" class="auth0">
             <button class="auth0" type="submit">Log with Auth0</button>
         </form>
     </div>

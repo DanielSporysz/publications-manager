@@ -6,3 +6,4 @@ requests
 python-jose
 flask-cors
 six
+authlib

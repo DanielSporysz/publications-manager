@@ -1,3 +1,9 @@
+from authlib.integrations.flask_client import OAuth
+from jose import jwt
+from flask_cors import cross_origin
+from flask import Flask, request, jsonify, _request_ctx_stack
+from functools import wraps
+from six.moves.urllib.request import urlopen
 from flask import Flask, request, make_response, render_template, jsonify, redirect
 from uuid import uuid4
 from ast import literal_eval
@@ -11,8 +17,23 @@ from dotenv import load_dotenv
 from os import getenv
 import sys
 from jwt import decode, InvalidTokenError
+import http.client
+
 
 app = Flask(__name__)
+
+oauth = OAuth(app)
+auth0 = oauth.register(
+    'auth0',
+    client_id='OAlnyEG2QDnHVOYVv0kPd7s4bqSNQk9E',
+    client_secret='B3W-_SVYKjx564Ww-_QS7Kp71dBu3c5j-ckeEvNnOgXjB5su7z1Btnq_g7jiHz9j',
+    api_base_url='https://dev-0n-bx69c.eu.auth0.com',
+    access_token_url='https://dev-0n-bx69c.eu.auth0.com/oauth/token',
+    authorize_url='https://dev-0n-bx69c.eu.auth0.com/authorize',
+    client_kwargs={
+        'scope': 'openid profile email',
+    }
+)
 
 load_dotenv(verbose=True)
 PDF = getenv("PDF_HOST")
@@ -21,6 +42,7 @@ SESSION_TIME = int(getenv("SESSION_TIME"))
 JWT_SESSION_TIME = int(getenv('JWT_SESSION_TIME'))
 JWT_SECRET = getenv("JWT_SECRET")
 INVALIDATE = -1
+app.secret_key = 'test'
 
 cache = redis.Redis(host='web_db', port=6379, db=0)
 
@@ -58,6 +80,27 @@ def auth():
     else:
         response.set_cookie("session_id", "INVALIDATE", max_age=INVALIDATE)
         response.headers["Location"] = "/login"
+
+    return response
+
+
+@app.route('/auth0-redirect')
+def redirect_to_auth0():
+    return auth0.authorize_redirect(redirect_uri='https://web.company.com/auth0-callback')
+
+
+@app.route('/auth0-callback')
+def greet_auth0():
+    auth0.authorize_access_token()
+    resp = auth0.get('userinfo')
+    userinfo = resp.json()
+
+    session_id = sessions_manager.create_session(userinfo["email"])
+    cache.hset("auth0_sessions", session_id, userinfo["email"])
+
+    response = make_response('', 303)
+    response.set_cookie("session_id", session_id, max_age=SESSION_TIME)
+    response.headers["Location"] = "/welcome"
 
     return response
 
@@ -778,23 +821,20 @@ def delete_file():
 
 Auth API
 '''
-import json
-from six.moves.urllib.request import urlopen
-from functools import wraps
 
-from flask import Flask, request, jsonify, _request_ctx_stack
-from flask_cors import cross_origin
-from jose import jwt
 
 AUTH0_DOMAIN = 'dev-0n-bx69c.eu.auth0.com'
 API_AUDIENCE = "fhs-auth"
 ALGORITHMS = ["RS256"]
 
 # Error handler
+
+
 class AuthError(Exception):
     def __init__(self, error, status_code):
         self.error = error
         self.status_code = status_code
+
 
 @app.errorhandler(AuthError)
 def handle_auth_error(ex):
@@ -803,33 +843,36 @@ def handle_auth_error(ex):
     return response
 
 # Format error response and append status code
+
+
 def get_token_auth_header():
     """Obtains the Access Token from the Authorization Header
     """
     auth = request.headers.get("Authorization", None)
     if not auth:
         raise AuthError({"code": "authorization_header_missing",
-                        "description":
-                            "Authorization header is expected"}, 401)
+                         "description":
+                         "Authorization header is expected"}, 401)
 
     parts = auth.split()
 
     if parts[0].lower() != "bearer":
         raise AuthError({"code": "invalid_header",
-                        "description":
-                            "Authorization header must start with"
-                            " Bearer"}, 401)
+                         "description":
+                         "Authorization header must start with"
+                         " Bearer"}, 401)
     elif len(parts) == 1:
         raise AuthError({"code": "invalid_header",
-                        "description": "Token not found"}, 401)
+                         "description": "Token not found"}, 401)
     elif len(parts) > 2:
         raise AuthError({"code": "invalid_header",
-                        "description":
-                            "Authorization header must be"
-                            " Bearer token"}, 401)
+                         "description":
+                         "Authorization header must be"
+                         " Bearer token"}, 401)
 
     token = parts[1]
     return token
+
 
 def requires_auth(f):
     """Determines if the Access Token is valid
@@ -861,23 +904,24 @@ def requires_auth(f):
                 )
             except jwt.ExpiredSignatureError:
                 raise AuthError({"code": "token_expired",
-                                "description": "token is expired"}, 401)
+                                 "description": "token is expired"}, 401)
             except jwt.JWTClaimsError:
                 raise AuthError({"code": "invalid_claims",
-                                "description":
-                                    "incorrect claims,"
-                                    "please check the audience and issuer"}, 401)
+                                 "description":
+                                 "incorrect claims,"
+                                 "please check the audience and issuer"}, 401)
             except Exception:
                 raise AuthError({"code": "invalid_header",
-                                "description":
-                                    "Unable to parse authentication"
-                                    " token."}, 401)
+                                 "description":
+                                 "Unable to parse authentication"
+                                 " token."}, 401)
 
             _request_ctx_stack.top.current_user = payload
             return f(*args, **kwargs)
         raise AuthError({"code": "invalid_header",
-                        "description": "Unable to find appropriate key"}, 401)
+                         "description": "Unable to find appropriate key"}, 401)
     return decorated
+
 
 def requires_scope(required_scope):
     """Determines if the required scope is present in the Access Token
@@ -887,8 +931,8 @@ def requires_scope(required_scope):
     token = get_token_auth_header()
     unverified_claims = jwt.get_unverified_claims(token)
     if unverified_claims.get("scope"):
-            token_scopes = unverified_claims["scope"].split()
-            for token_scope in token_scopes:
-                if token_scope == required_scope:
-                    return True
+        token_scopes = unverified_claims["scope"].split()
+        for token_scope in token_scopes:
+            if token_scope == required_scope:
+                return True
     return False
