@@ -10,6 +10,7 @@
 
 <body>
     <h1 class="h1 maintitle">WEB APP</h1>
+    <pre id="out"></pre>
     <div class="div welcome">
         <div class="div user">
             Welcome <b>{{username}}</b>!
@@ -86,3 +87,19 @@
         </fieldset>
     </div>
 </body>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script>
+    function sse() {
+        var source = new EventSource('/stream');
+        console.log(source)
+        var out = document.getElementById('out');
+        console.log("Script is running")
+        source.onmessage = function(e) {
+            console.log(e.data)
+            console.log("Script asdasdasdasdasing")
+            out.innerHTML = e.data + "\n" + out.innerHTML;
+        };
+        console.log(source)
+    }
+    sse();
+</script>

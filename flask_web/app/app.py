@@ -4,7 +4,7 @@ from flask_cors import cross_origin
 from flask import Flask, request, jsonify, _request_ctx_stack
 from functools import wraps
 from six.moves.urllib.request import urlopen
-from flask import Flask, request, make_response, render_template, jsonify, redirect
+from flask import Flask, request, make_response, render_template, jsonify, redirect, Response
 from uuid import uuid4
 from ast import literal_eval
 import json
@@ -51,6 +51,17 @@ usrs_manager.init_redis_with_users()  # DEV method
 sessions_manager = rsessions.SessionsManager(cache, SESSION_TIME)
 tokens_manager = tokenscrt.TokenCreator(JWT_SESSION_TIME, JWT_SECRET)
 
+def event_stream():
+    pubsub = cache.pubsub(ignore_subscribe_messages=True)
+    pubsub.subscribe('pub')
+    for message in pubsub.listen():
+        print("Message?", file=sys.stderr)
+        yield 'New publication: %s' % message['data']
+
+@app.route('/stream')
+def stream():
+    print("HEYYOO???? STREEAM", file=sys.stderr)
+    return Response(event_stream(), mimetype="text/event-stream")
 
 @app.route('/')
 def index():
@@ -94,6 +105,9 @@ def greet_auth0():
     auth0.authorize_access_token()
     resp = auth0.get('userinfo')
     userinfo = resp.json()
+
+    if userinfo['email_verified'] == False:
+        return "<h1>WEB</h1> You cannot use this account to log in." , 401
 
     session_id = sessions_manager.create_session(userinfo["email"])
     cache.hset("auth0_sessions", session_id, userinfo["email"])
@@ -264,6 +278,9 @@ def new_publication():
             pub = {"id": pid, "title": title, "authors": authors, "year": year,
                    "publisher": publisher, "files": files}
             cache.hset(username, pid, json.dumps(pub))
+
+            cache.publish('pub', 'NEW PUB HAS BEEN ADDED')
+            print("PUBLISHING", file=sys.stderr)
 
             msg = "New publication has been created successfully."
             return render_template("callback.html", msg=msg, username=username)
