@@ -3,3 +3,6 @@ redis
 pyjwt
 python-dotenv
 requests
+python-jose
+flask-cors
+six

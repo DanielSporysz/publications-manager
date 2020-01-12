@@ -1,5 +1,10 @@
 form.login {
     max-width: 400px;
+    background: #dadada;
+}
+
+div.login {
+    max-width: 400px;
     margin: 10px auto;
     padding: 17px 20px;
     background: #dadada;
@@ -27,5 +32,30 @@ button.login {
     color: #FFF;
     background-color: #4bc970;
     text-align: center;
+    font-style: normal;
+}
+
+button.login {
+    margin: 5px 0px;
+    border: 1px;
+    padding: 10px;
+    width: 100%;
+    color: #FFF;
+    background-color: #4bc970;
+    text-align: center;
+    font-style: normal;
+}
+
+form.auth0 {
+    text-align: right;
+    width: 100%;
+}
+
+button.auth0 {
+    border: 1px;
+    width: auto;
+    color: #FFF;
+    background-color: #5F9EA0;
+    text-align: right;
     font-style: normal;
 }
