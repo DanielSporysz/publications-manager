@@ -19,8 +19,11 @@
         </div>
 
         <fieldset class="fieldset">
-            <legend>Manage your account:</legend>
-            <form action="{{WEB}}/welcome" method="GET" enctype="multipart/form-data">
+            <legend>Change your password:</legend>
+            <form action="{{WEB}}/update-password" method="POST" enctype="multipart/form-data">
+                <input class="passChange" type="password" name="password" placeholder="Current password" required></input>
+                <input class="passChange" type="password" name="newPassword" placeholder="New password" required></input>
+                <input class="passChange" type="password" name="reNewPassword" placeholder="Retype new password" required></input>
                 <button type="submit">Change password</button>
             </form>
         </fieldset>

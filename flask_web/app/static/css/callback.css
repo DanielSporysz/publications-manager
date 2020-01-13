@@ -6,6 +6,10 @@ div.callback {
     border-radius: 8px;
 }
 
+div.callback.error {
+    background: #ffbdc6;
+}
+
 div.message {
     margin: 10px auto;
 }

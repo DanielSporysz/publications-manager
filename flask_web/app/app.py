@@ -210,7 +210,46 @@ def account_management():
     if sessions_manager.validate_session(session_id) and username is not None:
         username = username.decode()
 
+        # Check if it's auth0 session
+        if cache.hget(AUTH0_SESSIONS_KEY_TO_REDIS, session_id):
+            msg = "You cannot manage your auth0 account here"
+            return render_template("error_callback.html", username=username, msg=msg), 400
+
         return render_template("account.html", PDF=PDF, WEB=WEB, username=username)
+    else:
+        return my_redirect("/login")
+
+@app.route('/update-password', methods=['POST'])
+def update_password():
+    session_id = request.cookies.get('session_id')
+    username = sessions_manager.get_session_user(session_id)
+
+    password = request.form.get('password')
+    new_password = request.form.get('newPassword')
+    re_new_password = request.form.get('reNewPassword')
+
+    # Check if it's auth0 session
+    if cache.hget(AUTH0_SESSIONS_KEY_TO_REDIS, session_id):
+        msg = "You cannot manage your auth0 account here"
+        return render_template("error_callback.html", username=username, msg=msg), 400
+
+    if sessions_manager.validate_session(session_id) and username is not None:
+        username = username.decode()
+
+        if not password or not new_password or not re_new_password:
+            msg = "The form is missing some fields"
+            return render_template("error_callback.html", username=username, msg=msg), 400
+        if new_password != re_new_password:
+            msg = "Fields with new password don't match"
+            return render_template("error_callback.html", username=username, msg=msg), 400
+        if not usrs_manager.validate_credentials(username, password):
+            msg = "Wrong password"
+            return render_template("error_callback.html", username=username, msg=msg), 401
+
+        usrs_manager.register_user(username, new_password, password_change=True)
+
+        msg = "Password has been changed sucessfully"
+        return render_template("callback.html", username=username, msg=msg)
     else:
         return my_redirect("/login")
 
