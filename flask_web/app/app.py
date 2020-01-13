@@ -37,6 +37,8 @@ auth0 = oauth.register(
 )
 AUTH0_SESSIONS_KEY_TO_REDIS = "auth0_sessions"
 
+PUBLIC_PID_KEY_TO_REDIS = "PUBLIC_PID_KEY_TO_REDIS"
+
 load_dotenv(verbose=True)
 PDF = getenv("PDF_HOST")
 WEB = getenv("WEB_HOST")
