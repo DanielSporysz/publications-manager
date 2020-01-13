@@ -57,12 +57,12 @@ def event_stream():
     pubsub = cache.pubsub(ignore_subscribe_messages=True)
     pubsub.subscribe('pub')
     for message in pubsub.listen():
-        print("Message?", file=sys.stderr)
+        print("SEND MESSAGE TO CLIENTS, NEW PUB", file=sys.stderr)
         yield 'New publication: %s' % message['data']
 
 @app.route('/stream')
 def stream():
-    print("HEYYOO???? STREEAM", file=sys.stderr)
+    print("NEW CLIENT ASKS FOR STREAM", file=sys.stderr)
     return Response(event_stream(), mimetype="text/event-stream")
 
 @app.route('/')
