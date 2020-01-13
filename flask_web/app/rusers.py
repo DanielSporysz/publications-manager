@@ -15,14 +15,14 @@ class UsersManager:
         if username is None and password is None:
             return False
 
-        known_salt = self.cache.hget(self.users_salt_key_to_redis, username)
-        if known_salt is None:
-            return False
-
         hash_iteration = 0
         given_key = password.encode('utf-8')
         while hash_iteration < HASH_COUNT:
             known_salt = self.cache.hget(self.users_salt_key_to_redis + str(hash_iteration), username)
+            if known_salt is None:
+                if hash_iteration != 0:
+                    print("ERROR: there's no enough salt for hashing " + username + "'s password.")
+                return False
             given_key = hashlib.pbkdf2_hmac(
                 'sha256',
                 given_key,

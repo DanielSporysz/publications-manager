@@ -1,4 +1,5 @@
 from authlib.integrations.flask_client import OAuth
+import authlib
 from jose import jwt
 from flask_cors import cross_origin
 from flask import Flask, request, jsonify, _request_ctx_stack
