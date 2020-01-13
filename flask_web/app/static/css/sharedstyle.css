@@ -14,6 +14,7 @@ form.logout {
 
 button.account,
 button.logout {
+    border: 5px;
     float: right;
     color: #FFF;
     text-align: center;

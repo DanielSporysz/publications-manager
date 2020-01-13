@@ -5,6 +5,7 @@ from flask import Flask, request, jsonify, _request_ctx_stack
 from functools import wraps
 from six.moves.urllib.request import urlopen
 from flask import Flask, request, make_response, render_template, jsonify, redirect, Response
+from six.moves.urllib.parse import urlencode
 from uuid import uuid4
 from ast import literal_eval
 import json
@@ -34,6 +35,7 @@ auth0 = oauth.register(
         'scope': 'openid profile email',
     }
 )
+AUTH0_SESSIONS_KEY_TO_REDIS = "auth0_sessions"
 
 load_dotenv(verbose=True)
 PDF = getenv("PDF_HOST")
@@ -110,7 +112,7 @@ def greet_auth0():
         return "<h1>WEB</h1> You cannot use this account to log in." , 401
 
     session_id = sessions_manager.create_session(userinfo["email"])
-    cache.hset("auth0_sessions", session_id, userinfo["email"])
+    cache.hset(AUTH0_SESSIONS_KEY_TO_REDIS, session_id, userinfo["email"])
 
     response = make_response('', 303)
     response.set_cookie("session_id", session_id, max_age=SESSION_TIME)
@@ -185,8 +187,15 @@ def get_zip_of_file_list(username):
 @app.route('/logout')
 def logout():
     session_id = request.cookies.get('session_id')
+
     if session_id is not None:
         sessions_manager.delete_session(session_id)
+
+        # if it's auth0 session
+        if cache.hget(AUTH0_SESSIONS_KEY_TO_REDIS, session_id):
+            params = {'returnTo': 'https://web.company.com',
+                'client_id': 'OAlnyEG2QDnHVOYVv0kPd7s4bqSNQk9E'}
+            return redirect(auth0.api_base_url + '/v2/logout?' + urlencode(params))
 
     response = my_redirect("/login")
     response.set_cookie("session_id", "INVALIDATE", max_age=INVALIDATE)
