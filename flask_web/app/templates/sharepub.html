@@ -23,8 +23,8 @@
 
         <fieldset>
             <legend>Share options for "{{pub['title']}}":</legend>
-            <form action="" method="POST" enctype="multipart/form-data">
-                <input class="username" type="text" placeholder="Username"></input>
+            <form action="{{WEB}}/share-with-user/publication/{{pub['id']}}" method="POST" enctype="multipart/form-data">
+                <input class="username" name="username" type="text" placeholder="Username" required></input>
                 <button class="user" type="submit">Share with user</button>
             </form>
             <form action="{{WEB}}/share-with-everyone/publication/{{pub['id']}}" method="POST" enctype="multipart/form-data">
@@ -37,7 +37,7 @@
 
         <fieldset>
             <legend>You are sharing this publication with:</legend>
-            TODO: view with who shares, unshare options
+            TODO: view sees it TODO: unshare option
         </fieldset>
 
         <div class="div return">

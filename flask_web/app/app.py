@@ -38,7 +38,8 @@ auth0 = oauth.register(
 )
 AUTH0_SESSIONS_KEY_TO_REDIS = "auth0_sessions"
 
-PUBLIC_PID_KEY_TO_REDIS = "PUBLIC_PID_KEY_TO_REDIS"
+SHARED_WITH_EVERYONE_PUBS_KEY_TO_REDIS = "SHARED_WITH_EVERYONE_PUBS_KEY_TO_REDIS"
+SHARED_WITH_USERS_PUBS_KEY_TO_REDIS = "SHARED_WITH_USERS_PUBS_KEY_TO_REDIS"
 
 load_dotenv(verbose=True)
 PDF = getenv("PDF_HOST")
@@ -56,6 +57,7 @@ usrs_manager.init_redis_with_users()  # DEV method
 sessions_manager = rsessions.SessionsManager(cache, SESSION_TIME)
 tokens_manager = tokenscrt.TokenCreator(JWT_SESSION_TIME, JWT_SECRET)
 
+
 def event_stream():
     pubsub = cache.pubsub(ignore_subscribe_messages=True)
     pubsub.subscribe('pub')
@@ -63,10 +65,12 @@ def event_stream():
         print("SEND MESSAGE TO CLIENTS, NEW PUB", file=sys.stderr)
         yield 'New publication: %s' % message['data']
 
+
 @app.route('/stream')
 def stream():
     print("NEW CLIENT ASKS FOR STREAM", file=sys.stderr)
     return Response(event_stream(), mimetype="text/event-stream")
+
 
 @app.route('/')
 def index():
@@ -112,7 +116,7 @@ def greet_auth0():
     userinfo = resp.json()
 
     if userinfo['email_verified'] == False:
-        return "<h1>WEB</h1> You cannot use this account to log in." , 401
+        return "<h1>WEB</h1> You cannot use this account to log in.", 401
 
     session_id = sessions_manager.create_session(userinfo["email"])
     cache.hset(AUTH0_SESSIONS_KEY_TO_REDIS, session_id, userinfo["email"])
@@ -144,20 +148,22 @@ def welcome():
     else:
         return my_redirect("/login")
 
+
 def get_zip_of_shared_pub_list(username):
     publications_titles = []
     publications_ids = []
 
-    for key in cache.hkeys(PUBLIC_PID_KEY_TO_REDIS):
+    for key in cache.hkeys(SHARED_WITH_EVERYONE_PUBS_KEY_TO_REDIS):
         publications_ids.append(key.decode())
 
-        owner_name = cache.hget(PUBLIC_PID_KEY_TO_REDIS, key)
+        owner_name = cache.hget(SHARED_WITH_EVERYONE_PUBS_KEY_TO_REDIS, key)
         string_pub = cache.hget(owner_name, key).decode()
         pub = json.loads(string_pub)
 
         publications_titles.append(pub["title"])
 
     return zip(publications_titles, publications_ids)
+
 
 def get_zip_of_pub_list(username):
     publications_titles = []
@@ -211,7 +217,7 @@ def logout():
 
         # BROWSER ERROR: TOO MANY REDIRECTIONS
         # if it's auth0 session
-        #if cache.hget(AUTH0_SESSIONS_KEY_TO_REDIS, session_id):
+        # if cache.hget(AUTH0_SESSIONS_KEY_TO_REDIS, session_id):
         #    params = {'returnTo': 'https://web.company.com',
         #        'client_id': 'OAlnyEG2QDnHVOYVv0kPd7s4bqSNQk9E'}
         #    return redirect(auth0.api_base_url + '/v2/logout?' + urlencode(params))
@@ -237,6 +243,7 @@ def account_management():
         return render_template("account.html", PDF=PDF, WEB=WEB, username=username)
     else:
         return my_redirect("/login")
+
 
 @app.route('/update-password', methods=['POST'])
 def update_password():
@@ -265,7 +272,8 @@ def update_password():
             msg = "Wrong password"
             return render_template("error_callback.html", username=username, msg=msg), 401
 
-        usrs_manager.register_user(username, new_password, password_change=True)
+        usrs_manager.register_user(
+            username, new_password, password_change=True)
 
         msg = "Password has been changed sucessfully"
         return render_template("callback.html", username=username, msg=msg)
@@ -287,8 +295,8 @@ def view_publication(pid):
 
         publication_binary = cache.hget(username, pid)
         if publication_binary is None:
-            if pid.encode() in cache.hkeys(PUBLIC_PID_KEY_TO_REDIS):
-                owner_name = cache.hget(PUBLIC_PID_KEY_TO_REDIS, pid).decode()
+            if pid.encode() in cache.hkeys(SHARED_WITH_EVERYONE_PUBS_KEY_TO_REDIS):
+                owner_name = cache.hget(SHARED_WITH_EVERYONE_PUBS_KEY_TO_REDIS, pid).decode()
                 publication_binary = cache.hget(owner_name, pid)
             else:
                 return '<h1>PDF</h1> No such publication', 404
@@ -364,7 +372,7 @@ def new_publication():
 
 
 @app.route('/share-options/publication/<pid>', methods=["GET"])
-def share_options(pid):
+def share_pub_options(pid):
     session_id = request.cookies.get('session_id')
     username = sessions_manager.get_session_user(session_id)
 
@@ -385,8 +393,9 @@ def share_options(pid):
     else:
         return my_redirect("/login")
 
+
 @app.route('/share-with-everyone/publication/<pid>', methods=["POST"])
-def share_with_everyone(pid):
+def share_pub_with_everyone(pid):
     session_id = request.cookies.get('session_id')
     username = sessions_manager.get_session_user(session_id)
 
@@ -400,9 +409,42 @@ def share_with_everyone(pid):
             msg = 'Publication not found'
             return render_template("error_callback.html", msg=msg, username=username), 404
 
-        cache.hset(PUBLIC_PID_KEY_TO_REDIS, pid, username)
+        cache.hset(SHARED_WITH_EVERYONE_PUBS_KEY_TO_REDIS, pid, username)
 
-        msg = "Publication has been shared with everyone" 
+        msg = "Publication has been shared with everyone"
+        return render_template("callback.html", msg=msg, username=username)
+    else:
+        return my_redirect("/login")
+
+
+@app.route('/share-with-user/publication/<pid>', methods=["POST"])
+def share_pub_with_user(pid):
+    session_id = request.cookies.get('session_id')
+    username = sessions_manager.get_session_user(session_id)
+
+    if sessions_manager.validate_session(session_id) and username is not None:
+        username = username.decode()
+
+        target_username = request.form.get('username')
+
+        if len(pid) == 0:
+            msg = 'Missing publication id'
+            return render_template("error_callback.html", msg=msg, username=username), 404
+        if pid.encode() not in cache.hkeys(username):
+            msg = 'Publication not found'
+            return render_template("error_callback.html", msg=msg, username=username), 404
+        if target_username is None:
+            msg = 'Form is missing username to share publication with'
+            return render_template("error_callback.html", msg=msg, username=username), 400
+        if target_username == username:
+            msg = 'You cannot share a publication with yourself'
+            return render_template("error_callback.html", msg=msg, username=username), 400
+
+        #cache.hset(PUBLIC_PID_KEY_TO_REDIS, pid, username)
+        # TODO sharing with others
+
+        msg = "Publication has been shared with " + target_username
+        msg = "Nothing has been done yet :D"
         return render_template("callback.html", msg=msg, username=username)
     else:
         return my_redirect("/login")
@@ -494,7 +536,7 @@ def delete_publication(pid):
             if pid.encode() not in cache.hkeys(username):
                 return '<h1>WEB</h1> There is no such publication on your list: ' + pid, 404
 
-            cache.hdel(PUBLIC_PID_KEY_TO_REDIS, pid)
+            cache.hdel(PUBLIC_PUB_IDS_KEY_TO_REDIS, pid)
             cache.hdel(username, pid)
             msg = "Publication " + pid + " has been deleted successfully."
         except:
@@ -872,7 +914,7 @@ def delete_pub():
         return '<h1>WEB</h1> Incorrect request. Missing pid.', 400
 
     try:
-        cache.hdel(PUBLIC_PID_KEY_TO_REDIS, pid)
+        cache.hdel(PUBLIC_PUB_IDS_KEY_TO_REDIS, pid)
         cache.hdel(username, pid)
         return '<h1>WEB</h1> Publication has been deleted.', 200
     except:
