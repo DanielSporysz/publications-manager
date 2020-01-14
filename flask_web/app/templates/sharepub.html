@@ -23,11 +23,11 @@
 
         <fieldset>
             <legend>Share options for "{{pub['title']}}":</legend>
-            <form>
+            <form action="" method="POST" enctype="multipart/form-data">
                 <input class="username" type="text" placeholder="Username"></input>
                 <button class="user" type="submit">Share with user</button>
             </form>
-            <form>
+            <form action="{{WEB}}/share-with-everyone/publication/{{pub['id']}}" method="POST" enctype="multipart/form-data">
                 <div class="everyone">
                     <button type="submit">Share with everyone</button>
                 </div>

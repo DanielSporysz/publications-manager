@@ -63,7 +63,7 @@
             {% for pub_title, pub_id in publications %}
             <a class="a viewpub" href="{{WEB}}/publication/{{pub_id}}" title="click to view publication">{{pub_title}}</a>
 
-            <form class="option" title="share publication" action="{{WEB}}/share/publication/{{pub_id}}" method="GET" enctype="multipart/form-data">
+            <form class="option" title="share publication" action="{{WEB}}/share-options/publication/{{pub_id}}" method="GET" enctype="multipart/form-data">
                 <button type="submit" class="option">
                     <img  class="trash" src="{{ url_for('static', filename='share.svg') }}" />
                 </button>
@@ -89,6 +89,12 @@
                 </button>
             </form>
             {% endfor %}
+        </fieldset>
+
+        <fieldset>
+            <legend>Public publications:</legend>
+            {% for pub_title, pub_id in shared_publications %}
+            <a class="a viewpub" href="{{WEB}}/publication/{{pub_id}}" title="click to view publication">{{pub_title}}</a> {% endfor %}
         </fieldset>
     </div>
 </body>

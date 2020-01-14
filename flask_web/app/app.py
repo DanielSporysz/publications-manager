@@ -136,13 +136,28 @@ def welcome():
 
         files = get_zip_of_file_list(username)
         publications = get_zip_of_pub_list(username)
+        shared_publications = get_zip_of_shared_pub_list(username)
 
         return render_template("welcome.html", package=files,
                                upload_token=upload_token, PDF=PDF, WEB=WEB,
-                               username=username, publications=publications)
+                               username=username, publications=publications, shared_publications=shared_publications)
     else:
         return my_redirect("/logout")
 
+def get_zip_of_shared_pub_list(username):
+    publications_titles = []
+    publications_ids = []
+
+    for key in cache.hkeys(PUBLIC_PID_KEY_TO_REDIS):
+        publications_ids.append(key.decode())
+
+        owner_name = cache.hget(PUBLIC_PID_KEY_TO_REDIS, key)
+        string_pub = cache.hget(owner_name, key).decode()
+        pub = json.loads(string_pub)
+
+        publications_titles.append(pub["title"])
+
+    return zip(publications_titles, publications_ids)
 
 def get_zip_of_pub_list(username):
     publications_titles = []
@@ -267,17 +282,23 @@ def view_publication(pid):
 
     if sessions_manager.validate_session(session_id) and username is not None:
         username = username.decode()
+        owner_name = username
+
         publication_binary = cache.hget(username, pid)
         if publication_binary is None:
-            return '<h1>PDF</h1> No such publication', 404
+            if pid.encode() in cache.hkeys(PUBLIC_PID_KEY_TO_REDIS):
+                owner_name = cache.hget(PUBLIC_PID_KEY_TO_REDIS, pid).decode()
+                publication_binary = cache.hget(owner_name, pid)
+            else:
+                return '<h1>PDF</h1> No such publication', 404
 
         publication = json.loads(publication_binary.decode())
         list_of_file_ids = str(publication["files"]).replace(
             '[', '').replace(']', '').replace(',', '').split()
 
         # fetching file names from PDF service, publication contains only file ids
-        req = requests.get("http://pdf:5000/files/" + username
-                           + "?token=" + tokens_manager.create_getFileList_token(username).decode())
+        req = requests.get("http://pdf:5000/files/" + owner_name
+                           + "?token=" + tokens_manager.create_getFileList_token(owner_name).decode())
         file_ids = []
         file_display_names = []
         file_download_tokens = []
@@ -288,7 +309,7 @@ def view_publication(pid):
         for file_id in list_of_file_ids:
             file_ids.append(file_id)
             file_download_tokens.append(
-                tokens_manager.create_download_token(username, file_id).decode())
+                tokens_manager.create_download_token(owner_name, file_id).decode())
             if req.status_code == 200 and file_id in payload.keys():
                 file_display_names.append(
                     payload[file_id] + " (" + file_id + ")")
@@ -341,26 +362,50 @@ def new_publication():
         return my_redirect("/logout")
 
 
-@app.route('/share/publication/<pid>', methods=["GET"])
+@app.route('/share-options/publication/<pid>', methods=["GET"])
 def share_options(pid):
-    if len(pid) == 0:
-        return '<h1>PDF</h1> Missing publication id.', 404
-
     session_id = request.cookies.get('session_id')
     username = sessions_manager.get_session_user(session_id)
 
     if sessions_manager.validate_session(session_id) and username is not None:
         username = username.decode()
 
+        if len(pid) == 0:
+            msg = 'Missing publication id'
+            return render_template("error_callback.html", msg=msg, username=username), 404
         if pid.encode() not in cache.hkeys(username):
-            return '<h1>PDF</h1> Publication not found.', 404
+            msg = "Publication not found"
+            return render_template("error_callback.html", msg=msg, username=username), 404
 
         string_pub = cache.hget(username, pid).decode()
         pub = json.loads(string_pub)
 
-        return render_template("sharepub.html", username=username, pub=pub)
+        return render_template("sharepub.html", username=username, pub=pub, WEB=WEB)
     else:
         return my_redirect("/logout")
+
+@app.route('/share-with-everyone/publication/<pid>', methods=["POST"])
+def share_with_everyone(pid):
+    session_id = request.cookies.get('session_id')
+    username = sessions_manager.get_session_user(session_id)
+
+    if sessions_manager.validate_session(session_id) and username is not None:
+        username = username.decode()
+
+        if len(pid) == 0:
+            msg = 'Missing publication id'
+            return render_template("error_callback.html", msg=msg, username=username), 404
+        if pid.encode() not in cache.hkeys(username):
+            msg = 'Publication not found'
+            return render_template("error_callback.html", msg=msg, username=username), 404
+
+        cache.hset(PUBLIC_PID_KEY_TO_REDIS, pid, username)
+
+        msg = "Publication has been shared with everyone" 
+        return render_template("callback.html", msg=msg, username=username)
+    else:
+        return my_redirect("/logout")
+
 
 @app.route('/edit/publication/<pid>', methods=["GET"])
 def publication_editor(pid):
