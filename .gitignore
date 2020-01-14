@@ -1,3 +1,5 @@
 flask_pdf/app/__pycache__/
 flask_web/app/__pycache__/
 .vscode
+.idea
+PublicationsManager/target/

@@ -3,7 +3,8 @@ import os
 import hashlib
 import sys
 
-HASH_COUNT = 5
+HASH_COUNT = 10
+SALT_LENGTH = 32
 
 class UsersManager:
     def __init__(self, cache):
@@ -15,18 +16,18 @@ class UsersManager:
         if username is None and password is None:
             return False
 
-        hash_iteration = 0
+        salt_bag = self.cache.hget(self.users_salt_key_to_redis, username)
+        if salt_bag is None:
+            return False
+
         given_key = password.encode('utf-8')
+        hash_iteration = 0
         while hash_iteration < HASH_COUNT:
-            known_salt = self.cache.hget(self.users_salt_key_to_redis + str(hash_iteration), username)
-            if known_salt is None:
-                if hash_iteration != 0:
-                    print("ERROR: there's no enough salt for hashing " + username + "'s password.")
-                return False
+            salt = salt_bag[hash_iteration*SALT_LENGTH:hash_iteration*SALT_LENGTH+SALT_LENGTH]
             given_key = hashlib.pbkdf2_hmac(
                 'sha256',
                 given_key,
-                known_salt,
+                salt,
                 100000
             )
 
@@ -45,8 +46,9 @@ class UsersManager:
         if not password_change and self.cache.hget(self.users_key_to_redis, username) is not None:
             raise Exception(username + " is already registred")
 
-        hash_iteration = 0
         key = password.encode('utf-8')
+        salt_bag = "".encode('utf-8')
+        hash_iteration = 0
         while hash_iteration < HASH_COUNT:
             salt = os.urandom(32)
             key = hashlib.pbkdf2_hmac(
@@ -56,11 +58,11 @@ class UsersManager:
                 100000
             )
 
-            self.cache.hset(self.users_salt_key_to_redis +
-                            str(hash_iteration), username, salt)
+            salt_bag = salt_bag + salt
             hash_iteration += 1
 
         try:
+            self.cache.hset(self.users_salt_key_to_redis, username, salt_bag)            
             self.cache.hset(self.users_key_to_redis, username, key)
         except:
             raise Exception(username + "error updating credentials")
