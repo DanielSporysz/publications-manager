@@ -341,6 +341,27 @@ def new_publication():
         return my_redirect("/logout")
 
 
+@app.route('/share/publication/<pid>', methods=["GET"])
+def share_options(pid):
+    if len(pid) == 0:
+        return '<h1>PDF</h1> Missing publication id.', 404
+
+    session_id = request.cookies.get('session_id')
+    username = sessions_manager.get_session_user(session_id)
+
+    if sessions_manager.validate_session(session_id) and username is not None:
+        username = username.decode()
+
+        if pid.encode() not in cache.hkeys(username):
+            return '<h1>PDF</h1> Publication not found.', 404
+
+        string_pub = cache.hget(username, pid).decode()
+        pub = json.loads(string_pub)
+
+        return render_template("sharepub.html", username=username, pub=pub)
+    else:
+        return my_redirect("/logout")
+
 @app.route('/edit/publication/<pid>', methods=["GET"])
 def publication_editor(pid):
     if len(pid) == 0:

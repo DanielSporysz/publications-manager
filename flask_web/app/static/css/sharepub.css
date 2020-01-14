@@ -1,0 +1,12 @@
+button.user {
+    width: 49%;
+}
+
+input.username {
+    width: 49%;
+}
+
+div.everyone {
+    padding-top: 10px;
+    text-align: center;
+}

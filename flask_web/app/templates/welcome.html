@@ -23,7 +23,7 @@
             </form>
         </div>
 
-        <fieldset class="fieldset">
+        <fieldset>
             <legend>Upload a new file:</legend>
             <form action="{{PDF}}/upload" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="token" value="{{upload_token}}" />
@@ -33,7 +33,7 @@
             </form>
         </fieldset>
 
-        <fieldset class="fieldset">
+        <fieldset>
             <legend>List of your files:</legend>
             {% for fname, fid, ftoken, deltoken in package %}
             <a class="a downloadfile" href="{{PDF}}/download/{{fid}}?token={{ftoken}}" title="click to download file">{{ fname }}</a>
@@ -49,7 +49,7 @@
             {% endfor %}
         </fieldset>
 
-        <fieldset class="fieldset">
+        <fieldset>
             <legend>Create a new publication:</legend>
             <form class="option" action="/creator/publication" method="GET" enctype="multipart/form-data">
                 <button type="submit">
@@ -58,11 +58,16 @@
             </form>
         </fieldset>
 
-        <fieldset class="fieldset">
+        <fieldset>
             <legend>List of your publications:</legend>
             {% for pub_title, pub_id in publications %}
             <a class="a viewpub" href="{{WEB}}/publication/{{pub_id}}" title="click to view publication">{{pub_title}}</a>
 
+            <form class="option" title="share publication" action="{{WEB}}/share/publication/{{pub_id}}" method="GET" enctype="multipart/form-data">
+                <button type="submit" class="option">
+                    <img  class="trash" src="{{ url_for('static', filename='share.svg') }}" />
+                </button>
+            </form>
             <form class="option" title="edit publication" action="{{WEB}}/edit/publication/{{pub_id}}" method="GET" enctype="multipart/form-data">
                 <button type="submit" class="option">
                     <img  class="trash" src="{{ url_for('static', filename='edit.svg') }}" />
