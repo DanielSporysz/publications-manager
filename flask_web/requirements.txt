@@ -7,3 +7,4 @@ python-jose
 flask-cors
 six
 authlib
+uwsgi
