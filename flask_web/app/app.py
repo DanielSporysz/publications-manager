@@ -493,6 +493,7 @@ def delete_publication(pid):
             if pid.encode() not in cache.hkeys(username):
                 return '<h1>WEB</h1> There is no such publication on your list: ' + pid, 404
 
+            cache.hdel(PUBLIC_PID_KEY_TO_REDIS, pid)
             cache.hdel(username, pid)
             msg = "Publication " + pid + " has been deleted successfully."
         except:
@@ -870,6 +871,7 @@ def delete_pub():
         return '<h1>WEB</h1> Incorrect request. Missing pid.', 400
 
     try:
+        cache.hdel(PUBLIC_PID_KEY_TO_REDIS, pid)
         cache.hdel(username, pid)
         return '<h1>WEB</h1> Publication has been deleted.', 200
     except:
