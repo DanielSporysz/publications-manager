@@ -74,7 +74,7 @@ def index():
     if session_id is not None and sessions_manager.validate_session(session_id):
         return my_redirect("/welcome")
     else:
-        return my_redirect("/logout")
+        return my_redirect("/login")
 
 
 @app.route('/login')
@@ -142,7 +142,7 @@ def welcome():
                                upload_token=upload_token, PDF=PDF, WEB=WEB,
                                username=username, publications=publications, shared_publications=shared_publications)
     else:
-        return my_redirect("/logout")
+        return my_redirect("/login")
 
 def get_zip_of_shared_pub_list(username):
     publications_titles = []
@@ -209,11 +209,12 @@ def logout():
     if session_id is not None:
         sessions_manager.delete_session(session_id)
 
+        # BROWSER ERROR: TOO MANY REDIRECTIONS
         # if it's auth0 session
-        if cache.hget(AUTH0_SESSIONS_KEY_TO_REDIS, session_id):
-            params = {'returnTo': 'https://web.company.com',
-                'client_id': 'OAlnyEG2QDnHVOYVv0kPd7s4bqSNQk9E'}
-            return redirect(auth0.api_base_url + '/v2/logout?' + urlencode(params))
+        #if cache.hget(AUTH0_SESSIONS_KEY_TO_REDIS, session_id):
+        #    params = {'returnTo': 'https://web.company.com',
+        #        'client_id': 'OAlnyEG2QDnHVOYVv0kPd7s4bqSNQk9E'}
+        #    return redirect(auth0.api_base_url + '/v2/logout?' + urlencode(params))
 
     response = my_redirect("/login")
     response.set_cookie("session_id", "INVALIDATE", max_age=INVALIDATE)
@@ -235,7 +236,7 @@ def account_management():
 
         return render_template("account.html", PDF=PDF, WEB=WEB, username=username)
     else:
-        return my_redirect("/logout")
+        return my_redirect("/login")
 
 @app.route('/update-password', methods=['POST'])
 def update_password():
@@ -269,7 +270,7 @@ def update_password():
         msg = "Password has been changed sucessfully"
         return render_template("callback.html", username=username, msg=msg)
     else:
-        return my_redirect("/logout")
+        return my_redirect("/login")
 
 
 @app.route('/publication/<pid>', methods=['GET'])
@@ -324,7 +325,7 @@ def view_publication(pid):
                                                                          file_display_names, file_download_tokens),
                                PDF=PDF)
     else:
-        return my_redirect("/logout")
+        return my_redirect("/login")
 
 
 @app.route('/new/publication', methods=['POST'])
@@ -359,7 +360,7 @@ def new_publication():
         except:
             return '<h1>WEB</h1> Error during posting a publication.', 500
     else:
-        return my_redirect("/logout")
+        return my_redirect("/login")
 
 
 @app.route('/share-options/publication/<pid>', methods=["GET"])
@@ -382,7 +383,7 @@ def share_options(pid):
 
         return render_template("sharepub.html", username=username, pub=pub, WEB=WEB)
     else:
-        return my_redirect("/logout")
+        return my_redirect("/login")
 
 @app.route('/share-with-everyone/publication/<pid>', methods=["POST"])
 def share_with_everyone(pid):
@@ -404,7 +405,7 @@ def share_with_everyone(pid):
         msg = "Publication has been shared with everyone" 
         return render_template("callback.html", msg=msg, username=username)
     else:
-        return my_redirect("/logout")
+        return my_redirect("/login")
 
 
 @app.route('/edit/publication/<pid>', methods=["GET"])
@@ -428,7 +429,7 @@ def publication_editor(pid):
 
         return render_template("editpub.html", username=username, pid=pid, pub=pub, list_of_file_ids=list_of_file_ids)
     else:
-        return my_redirect("/logout")
+        return my_redirect("/login")
 
 
 @app.route('/update/publication/<pid>', methods=['POST'])
@@ -465,7 +466,7 @@ def update_publication(pid):
         except:
             return '<h1>WEB</h1> Error during updating a publication.', 500
     else:
-        return my_redirect("/logout")
+        return my_redirect("/login")
 
 
 @app.route('/creator/publication', methods=["GET"])
@@ -477,7 +478,7 @@ def publication_creator():
         username = username.decode()
         return render_template("createpublication.html", username=username)
     else:
-        return my_redirect("/logout")
+        return my_redirect("/login")
 
 
 @app.route('/delete/publication/<pid>', methods=['POST'])
@@ -500,7 +501,7 @@ def delete_publication(pid):
             msg = "An error occured while deleting a publication!"
         return render_template("callback.html", msg=msg, username=username.decode())
     else:
-        return my_redirect("/logout")
+        return my_redirect("/login")
 
 
 @app.route('/attach-file-chooser/publication/<pid>', methods=['GET'])
@@ -540,7 +541,7 @@ def chose_attachment(pid):
         else:
             return '<h1>WEB</h1> There has been an error fetching list of your files.', 500
     else:
-        return my_redirect("/logout")
+        return my_redirect("/login")
 
 
 @app.route('/attach-file/publication/<pid>', methods=['POST'])
@@ -586,7 +587,7 @@ def attach_file(pid):
             pub["title"] + '\" successfully.'
         return render_template("callback.html", msg=msg, username=username)
     else:
-        return my_redirect("/logout")
+        return my_redirect("/login")
 
 
 @app.route('/dettach-file-chooser/publication/<pid>', methods=['GET'])
@@ -629,7 +630,7 @@ def chose_dettachment(pid):
         return render_template("dettachfile.html", username=username, pub=pub, files=zip(already_attached_fids, display_names))
 
     else:
-        return my_redirect("/logout")
+        return my_redirect("/login")
 
 
 @app.route('/dettach-file/publication/<pid>', methods=['POST'])
@@ -661,7 +662,7 @@ def dettach_file(pid):
             pub["title"] + '\" successfully.'
         return render_template("callback.html", msg=msg, username=username)
     else:
-        return my_redirect("/logout")
+        return my_redirect("/login")
 
 
 @app.route('/callback')
