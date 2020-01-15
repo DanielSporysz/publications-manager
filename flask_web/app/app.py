@@ -38,10 +38,15 @@ auth0 = oauth.register(
 )
 AUTH0_SESSIONS_KEY_TO_REDIS = "auth0_sessions"
 
+# pid as key, username as value
 LIST_OF_PUBLIC_PUBS_KEY_TO_REDIS = "LIST_OF_PUBLIC_PUBS_KEY_TO_REDIS"
-USER_TO_SHARED_PUBS_KEY_TO_REDIS = "USER_TO_SHARED_PUBS_KEY_TO_REDIS"
-SHARED_PUB_OWNERS_KEY_TO_REDIS = "SHARED_PUB_OWNERS_KEY_TO_REDIS"
-PUB_TO_USERS = "PUB_TO_USERS"
+
+# username as key, list of "shared with" pids as value
+USER_CAN_VIEW_PUBS_KEY_TO_REDIS = "USER_CAN_VIEW_PUBS_KEY_TO_REDIS"
+ # pid as key, username as value
+PUBLICATION_OWNERSHIP_KEY_TO_REDIS = "PUBLICATION_OWNERSHIP_KEY_TO_REDIS"
+# username as key, dict of (pid as key, list of users as value) value
+USER_SHARES_KEY_TO_REDIS = "USER_SHARES_KEY_TO_REDIS"
 
 load_dotenv(verbose=True)
 PDF = getenv("PDF_HOST")
@@ -163,13 +168,13 @@ def get_zip_of_shared_pub_list(username):
         pub = json.loads(string_pub)
         publications_titles.append(pub["title"])
 
-    shared_with_user_list = cache.hget(USER_TO_SHARED_PUBS_KEY_TO_REDIS, username)
+    shared_with_user_list = cache.hget(USER_CAN_VIEW_PUBS_KEY_TO_REDIS, username)
     if shared_with_user_list:
         shared_with_user_list = json.loads(shared_with_user_list.decode())
         for pid in shared_with_user_list:
             publications_ids.append(pid)
 
-            owner_name = cache.hget(SHARED_PUB_OWNERS_KEY_TO_REDIS, pid).decode()
+            owner_name = cache.hget(PUBLICATION_OWNERSHIP_KEY_TO_REDIS, pid).decode()
             string_pub = cache.hget(owner_name, pid).decode()
             pub = json.loads(string_pub)
             publications_titles.append(pub["title"])
@@ -308,14 +313,14 @@ def view_publication(pid):
 
         publication_binary = cache.hget(username, pid)
         if publication_binary is None:
-            shared_with_user_list = cache.hget(USER_TO_SHARED_PUBS_KEY_TO_REDIS, username)
+            shared_with_user_list = cache.hget(USER_CAN_VIEW_PUBS_KEY_TO_REDIS, username)
             if pid.encode() in cache.hkeys(LIST_OF_PUBLIC_PUBS_KEY_TO_REDIS):
                 owner_name = cache.hget(LIST_OF_PUBLIC_PUBS_KEY_TO_REDIS, pid).decode()
                 publication_binary = cache.hget(owner_name, pid)
             elif shared_with_user_list:
                 shared_with_user_list = json.loads(shared_with_user_list.decode())
                 if pid in shared_with_user_list:
-                    owner_name = cache.hget(SHARED_PUB_OWNERS_KEY_TO_REDIS, pid).decode()
+                    owner_name = cache.hget(PUBLICATION_OWNERSHIP_KEY_TO_REDIS, pid).decode()
                     publication_binary = cache.hget(owner_name, pid)
             else:
                 msg = "No such publication"
@@ -409,6 +414,8 @@ def share_pub_options(pid):
         string_pub = cache.hget(username, pid).decode()
         pub = json.loads(string_pub)
 
+        #TODO displaying where the pub is shared
+
         return render_template("sharepub.html", username=username, pub=pub, WEB=WEB)
     else:
         return my_redirect("/login")
@@ -460,8 +467,7 @@ def share_pub_with_user(pid):
             msg = 'You cannot share a publication with yourself'
             return render_template("error_callback.html", msg=msg, username=username), 400
 
-
-        shared_with_user_list = cache.hget(USER_TO_SHARED_PUBS_KEY_TO_REDIS, target_username)
+        shared_with_user_list = cache.hget(USER_CAN_VIEW_PUBS_KEY_TO_REDIS, target_username)
         if shared_with_user_list is None:
             shared_with_user_list = []
         else:
@@ -471,17 +477,25 @@ def share_pub_with_user(pid):
             msg = 'You have already shared this publication with ' + target_username
             return render_template("error_callback.html", msg=msg, username=username), 400
 
-        cache.hset(SHARED_PUB_OWNERS_KEY_TO_REDIS, pid, username)
-        shared_with_user_list.append(pid)
-        cache.hset(USER_TO_SHARED_PUBS_KEY_TO_REDIS, target_username, json.dumps(shared_with_user_list))
+        # Remeber ownership
+        cache.hset(PUBLICATION_OWNERSHIP_KEY_TO_REDIS, pid, username)
 
-        pubs_to_users = cache.hget(PUB_TO_USERS, pid)
-        if pubs_to_users is None:
-            pubs_to_users = []
+        # Remember with who users shares publication
+        shares = cache.hget(USER_SHARES_KEY_TO_REDIS, username)
+        if shares is None:
+            shares = {}
         else:
-            pubs_to_users = json.loads(pubs_to_users.decode())
-        pubs_to_users.append(target_username)
-        cache.hset(PUB_TO_USERS, pid, json.dumps(pubs_to_users))
+            shares = json.loads(shares.decode())
+        list_of_shares = shares.get(pid)
+        if list_of_shares is None:
+            list_of_shares = []
+        list_of_shares = list_of_shares.append(target_username)
+        shares[pid] = list_of_shares
+        cache.hset(USER_SHARES_KEY_TO_REDIS, username, json.dumps(shares))
+
+        # Share it to user
+        shared_with_user_list.append(pid)
+        cache.hset(USER_CAN_VIEW_PUBS_KEY_TO_REDIS, target_username, json.dumps(shared_with_user_list))
 
         msg = "Publication has been shared with " + target_username
         return render_template("callback.html", msg=msg, username=username)
