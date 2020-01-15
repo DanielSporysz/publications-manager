@@ -584,8 +584,8 @@ def unshare_pub_with_user(pid):
                 shares[pid] = list_of_shares
                 cache.hset(USER_SHARES_KEY_TO_REDIS, username, json.dumps(shares))
 
-        # Forget ownership
-        cache.hdel(PUBLICATION_OWNERSHIP_KEY_TO_REDIS, pid)
+        # Don't for get ownership
+        # cache.hdel(PUBLICATION_OWNERSHIP_KEY_TO_REDIS, pid)
 
         msg = "Publication has been unshared with " + target_username
         return render_template("callback.html", msg=msg, username=username)
