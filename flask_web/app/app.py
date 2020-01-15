@@ -300,16 +300,16 @@ def update_password():
 
 @app.route('/publication/<pid>', methods=['GET'])
 def view_publication(pid):
-    if len(pid) == 0:
-        msg = "Missing publication id"
-        return render_template("error_callback.html", username=username, msg=msg), 404
-
     session_id = request.cookies.get('session_id')
     username = sessions_manager.get_session_user(session_id)
 
     if sessions_manager.validate_session(session_id) and username is not None:
         username = username.decode()
         owner_name = username
+
+        if len(pid) == 0:
+            msg = "Missing publication id"
+            return render_template("error_callback.html", username=username, msg=msg), 404
 
         publication_binary = cache.hget(username, pid)
         if publication_binary is None:
