@@ -414,9 +414,20 @@ def share_pub_options(pid):
         string_pub = cache.hget(username, pid).decode()
         pub = json.loads(string_pub)
 
-        #TODO displaying where the pub is shared
+        # Check if publication is public
+        if pid.encode() in cache.hkeys(LIST_OF_PUBLIC_PUBS_KEY_TO_REDIS):
+            is_shared_with_everyone = True
+        else:
+            is_shared_with_everyone = False
 
-        return render_template("sharepub.html", username=username, pub=pub, WEB=WEB)
+        # Check if publication is shared with users
+        list_of_users = None
+        user_shares = cache.hget(USER_SHARES_KEY_TO_REDIS, username)
+        if user_shares:
+            user_shares = json.loads(user_shares.decode())
+            list_of_users = user_shares.get(pid)
+
+        return render_template("sharepub.html", username=username, pub=pub, WEB=WEB, list_of_users=list_of_users, is_shared_with_everyone=is_shared_with_everyone)
     else:
         return my_redirect("/login")
 
@@ -489,7 +500,7 @@ def share_pub_with_user(pid):
         list_of_shares = shares.get(pid)
         if list_of_shares is None:
             list_of_shares = []
-        list_of_shares = list_of_shares.append(target_username)
+        list_of_shares.append(target_username)
         shares[pid] = list_of_shares
         cache.hset(USER_SHARES_KEY_TO_REDIS, username, json.dumps(shares))
 

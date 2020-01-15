@@ -32,13 +32,23 @@
                     <button type="submit">Share with everyone</button>
                 </div>
             </form>
-
         </fieldset>
 
+        {% if is_shared_with_everyone %}
+        <fieldset>
+            <legend>This publication is public:</legend>
+            TODO: unshare me
+        </fieldset>
+        {% endif %}
+
+        {% if list_of_users %}
         <fieldset>
             <legend>You are sharing this publication with:</legend>
-            TODO: view sees it TODO: unshare option
+            {% for username in list_of_users %}
+            {{username}} TODO: unshare me
+            {% endfor %}
         </fieldset>
+        {% endif %}
 
         <div class="div return">
             <form class="form return" action="/welcome" method="GET">
