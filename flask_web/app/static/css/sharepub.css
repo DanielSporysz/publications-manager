@@ -10,3 +10,10 @@ div.everyone {
     padding-top: 10px;
     text-align: center;
 }
+
+form.unshare.user,
+label.unshare.user{
+    width: 49%;
+    display: inline-block;
+    vertical-align: middle;
+}

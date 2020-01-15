@@ -23,29 +23,43 @@
 
         <fieldset>
             <legend>Share options for "{{pub['title']}}":</legend>
-            <form action="{{WEB}}/share-with-user/publication/{{pub['id']}}" method="POST" enctype="multipart/form-data">
+            <form action="{{WEB}}/share-with-user/publication/{{pub['id']}}" method="POST"
+                enctype="multipart/form-data">
                 <input class="username" name="username" type="text" placeholder="Username" required></input>
                 <button class="user" type="submit">Share with user</button>
             </form>
-            <form action="{{WEB}}/share-with-everyone/publication/{{pub['id']}}" method="POST" enctype="multipart/form-data">
+            {% if not is_shared_with_everyone %}
+            <form action="{{WEB}}/share-with-everyone/publication/{{pub['id']}}" method="POST"
+                enctype="multipart/form-data">
                 <div class="everyone">
                     <button type="submit">Share with everyone</button>
                 </div>
             </form>
+            {% endif %}
         </fieldset>
 
         {% if is_shared_with_everyone %}
         <fieldset>
             <legend>This publication is public:</legend>
-            TODO: unshare me
+            <form action="{{WEB}}/unshare-with-everyone/publication/{{pub['id']}}" method="POST"
+                enctype="multipart/form-data">
+                <button type="submit">Unshare with everyone</button>
+            </form>
         </fieldset>
         {% endif %}
 
         {% if list_of_users %}
         <fieldset>
             <legend>You are sharing this publication with:</legend>
-            {% for username in list_of_users %}
-            {{username}} TODO: unshare me
+            {% for target_username in list_of_users %}
+            <label class="unshare user">
+                {{target_username}}
+            </label>
+            <form action="{{WEB}}/unshare-with-user/publication/{{pub['id']}}" method="POST"
+                enctype="multipart/form-data" class="unshare user">
+                <input class="username" name="username" type="hidden" value={{target_username}} required></input>
+                <button type="submit">Unshare with {{target_username}}</button>
+            </form>
             {% endfor %}
         </fieldset>
         {% endif %}
