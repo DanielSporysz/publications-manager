@@ -5,7 +5,7 @@ Python WEB application built using Flask and Nginx. The service provides files a
 The repository also contains desktop JavaFX client for WEB service in \PublicationsManager.
 
 For development purposes, user database is initialised with 2 users on start up:
-[login, passwword]
+[login, password]
 - admin, admin
 - daniel, mistrz
 
@@ -21,7 +21,7 @@ For development purposes, user database is initialised with 2 users on start up:
 - brute force attack protection.
 
 # Credits
-This project is heavily inspided on the reposity https://github.com/bchaber/di1541 of user https://github.com/bchaber.
+This project is heavily inspired on the repository at https://github.com/bchaber/di1541 of user https://github.com/bchaber.
 
 # WEB service requirements
 The service listens on port 443 and is set to use the following domain names:
@@ -30,11 +30,11 @@ The service listens on port 443 and is set to use the following domain names:
 
 # Java client requirements:
 - written in Java 8 with JavaFX library,
-- Add web.crt and pdf.crt certifices to java trusted CNs store (or disable trusted CA checking in JVM).
+- Add web.crt and pdf.crt certificates to java trusted CNs store (or disable trusted CA checking in JVM).
  
-Server certificates are localed in \SSL catalog.
+Server certificates are located in \SSL catalog.
 	
-Suggested way of adding the server ceritficates:
+Suggested way of adding the server certificates:
 1. (add java tools to your class path)
 PATH=%PATH%;"C:\Program Files\Java\jdk1.8.0_231\bin"
 2. (use keytool from *\Java\jdk1.8.0_231\bin) 
@@ -43,7 +43,7 @@ keytool -importcert -alias webcompanycom -keystore "C:\Program Files\Java\jdk1.8
 # Planned features:
 - registration system,
 - protection from XSRF attacks,
-- blocking accounts when certain number of failed login attemps has been made,
+- blocking accounts when certain number of failed login attempts  has been made,
 - system warning users about failed login attempts,
 - checking the strength of user password on registration,
-- adding a delay to login responses to delay bruteforce attacks.
+- adding a delay to login responses to delay brute force attacks.
