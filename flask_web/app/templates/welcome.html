@@ -102,15 +102,13 @@
 <script>
     function sse() {
         var source = new EventSource('/stream');
-        console.log(source)
         var out = document.getElementById('out');
         console.log("Script is running")
         source.onmessage = function(e) {
             console.log(e.data)
-            console.log("Script asdasdasdasdasing")
-            out.innerHTML = e.data + "\n" + out.innerHTML;
+            // TODO popup of some sort on notificaiton 
+            /*out.innerHTML = e.data + "\n" + out.innerHTML;*/
         };
-        console.log(source)
     }
     sse();
 </script>

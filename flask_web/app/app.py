@@ -67,10 +67,11 @@ tokens_manager = tokenscrt.TokenCreator(JWT_SESSION_TIME, JWT_SECRET)
 
 def event_stream():
     pubsub = cache.pubsub(ignore_subscribe_messages=True)
+    # TODO per user notifications
     pubsub.subscribe('pub')
     for message in pubsub.listen():
         print("SEND MESSAGE TO CLIENTS, NEW PUB", file=sys.stderr)
-        yield 'New publication: %s' % message['data']
+        yield 'data: %s\n\n' % message['data']
 
 
 @app.route('/stream')
