@@ -105,9 +105,7 @@
         var out = document.getElementById('out');
         console.log("Script is running")
         source.onmessage = function(e) {
-            console.log(e.data)
-            // TODO popup of some sort on notificaiton 
-            /*out.innerHTML = e.data + "\n" + out.innerHTML;*/
+            out.innerHTML = out.innerHTML + '<div class ="notification">' +  e.data + '</div>';
         };
     }
     sse();

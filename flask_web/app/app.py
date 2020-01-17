@@ -72,7 +72,7 @@ def event_stream(username):
     pubsub.subscribe(username)
     pubsub.subscribe(PUBLIC_PUB_NOTIFICATION_KEY_TO_PUBSUB)
     for message in pubsub.listen():
-        yield 'data: %s\n\n' % message['data']
+        yield 'data: %s\n\n' % message['data'].decode("utf-8")
 
 
 @app.route('/stream')
@@ -395,7 +395,7 @@ def new_publication():
             cache.hset(username, pid, json.dumps(pub))
 
             # push a notification to other clients logged on this account
-            cache.publish(username, "You have posted a new publication from different place")
+            cache.publish(username, "You have posted a new publication from different place. Refresh the page to see it.")
 
             msg = "New publication has been created successfully."
             return render_template("callback.html", msg=msg, username=username)
@@ -459,7 +459,7 @@ def share_pub_with_everyone(pid):
         cache.hset(LIST_OF_PUBLIC_PUBS_KEY_TO_REDIS, pid, username)
 
         # push notification to everyone
-        cache.publish(PUBLIC_PUB_NOTIFICATION_KEY_TO_PUBSUB, username + " has posted a new publication!")
+        cache.publish(PUBLIC_PUB_NOTIFICATION_KEY_TO_PUBSUB, username + " has posted a new publication. Refresh the page to see it.")
 
         msg = "Publication has been shared with everyone"
         return render_template("callback.html", msg=msg, username=username)
@@ -543,7 +543,7 @@ def share_pub_with_user(pid):
         cache.hset(USER_CAN_VIEW_PUBS_KEY_TO_REDIS, target_username, json.dumps(shared_with_user_list))
 
         # Send notification
-        cache.publish(target_username, username + " has shared a new publication with you.")
+        cache.publish(target_username, username + " has shared a new publication with you. Refresh the page to see it.")
 
         msg = "Publication has been shared with " + target_username
         return render_template("callback.html", msg=msg, username=username)
@@ -573,7 +573,7 @@ def check_unshare_pub_with_user(pid):
             msg = 'You cannot share a publication with yourself'
             return render_template("error_callback.html", msg=msg, username=username), 400
 
-        unshare_pub_with_user(pid=pid, owner=username, target_username=target_username)
+        unshare_pub_with_user(pid=pid, username=username, target_username=target_username)
 
         msg = "Publication has been unshared with " + target_username
         return render_template("callback.html", msg=msg, username=username)
@@ -689,26 +689,25 @@ def delete_publication(pid):
             msg = "Missing publication id"
             return render_template("error_callback.html", msg=msg, username=username), 404
 
-        # try:
-        if pid.encode() not in cache.hkeys(username):
-            msg = "There is no such publication on your list"
-            return render_template("error_callback.html", msg=msg, username=username), 404
+        try:
+            if pid.encode() not in cache.hkeys(username):
+                msg = "There is no such publication on your list"
+                return render_template("error_callback.html", msg=msg, username=username), 404
 
-        shares = cache.hget(USER_SHARES_KEY_TO_REDIS, username)
-        if shares:
-            shares = json.loads(shares.decode())
-            list_of_shares = shares.get(pid)
-            print("OTO LISTA SHAROW", file=sys.stderr)
-            print(list_of_shares, file=sys.stderr)
-            for target in list_of_shares:
-                unshare_pub_with_user(pid, username, target)
+            shares = cache.hget(USER_SHARES_KEY_TO_REDIS, username)
+            if shares:
+                shares = json.loads(shares.decode())
+                list_of_shares = shares.get(pid)
+                if list_of_shares:
+                    for target in list_of_shares:
+                        unshare_pub_with_user(pid, username, target)
 
-        cache.hdel(LIST_OF_PUBLIC_PUBS_KEY_TO_REDIS, pid)
-        cache.hdel(username, pid)
-        msg = "Publication " + pid + " has been deleted successfully."
-        # except:
-        #     msg = "An error occured while deleting a publication!"
-        #     return render_template("error_callback.html", msg=msg, username=username)
+            cache.hdel(LIST_OF_PUBLIC_PUBS_KEY_TO_REDIS, pid)
+            cache.hdel(username, pid)
+            msg = "Publication " + pid + " has been deleted successfully."
+        except:
+            msg = "An error occured while deleting a publication!"
+            return render_template("error_callback.html", msg=msg, username=username)
         return render_template("callback.html", msg=msg, username=username)
     else:
         return my_redirect("/login")

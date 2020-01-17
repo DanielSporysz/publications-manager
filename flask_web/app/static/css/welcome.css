@@ -6,6 +6,14 @@ div.welcome {
     border-radius: 8px;
 }
 
+div.notification {
+    max-width: 600px;
+    margin: 10px auto;
+    padding: 17px 20px;
+    background: #ffcf4d;
+    border-radius: 8px;
+}
+
 fieldset {
     margin: 10px auto;
 }
