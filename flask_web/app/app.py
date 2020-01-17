@@ -48,6 +48,8 @@ PUBLICATION_OWNERSHIP_KEY_TO_REDIS = "PUBLICATION_OWNERSHIP_KEY_TO_REDIS"
 # username as key, dict of (pid as key, list of users as value) value
 USER_SHARES_KEY_TO_REDIS = "USER_SHARES_KEY_TO_REDIS"
 
+PUBLIC_PUB_NOTIFICATION_KEY_TO_PUBSUB = "!@,everyone" # usernames musn't contain characters as "!@,"
+
 load_dotenv(verbose=True)
 PDF = getenv("PDF_HOST")
 WEB = getenv("WEB_HOST")
@@ -65,19 +67,24 @@ sessions_manager = rsessions.SessionsManager(cache, SESSION_TIME)
 tokens_manager = tokenscrt.TokenCreator(JWT_SESSION_TIME, JWT_SECRET)
 
 
-def event_stream():
+def event_stream(username):
     pubsub = cache.pubsub(ignore_subscribe_messages=True)
-    # TODO per user notifications
-    pubsub.subscribe('pub')
+    pubsub.subscribe(username)
+    pubsub.subscribe(PUBLIC_PUB_NOTIFICATION_KEY_TO_PUBSUB)
     for message in pubsub.listen():
-        print("SEND MESSAGE TO CLIENTS, NEW PUB", file=sys.stderr)
         yield 'data: %s\n\n' % message['data']
 
 
 @app.route('/stream')
 def stream():
-    print("NEW CLIENT ASKS FOR STREAM", file=sys.stderr)
-    return Response(event_stream(), mimetype="text/event-stream")
+    session_id = request.cookies.get('session_id')
+    username = sessions_manager.get_session_user(session_id)
+
+    if sessions_manager.validate_session(session_id) and username is not None:
+        username = username.decode()
+        return Response(event_stream(username), mimetype="text/event-stream")   
+    else:
+        return "<h1>WEB</h1> You are not logged in", 403
 
 
 @app.route('/')
@@ -387,8 +394,8 @@ def new_publication():
                    "publisher": publisher, "files": files}
             cache.hset(username, pid, json.dumps(pub))
 
-            cache.publish('pub', 'NEW PUB HAS BEEN ADDED')
-            print("PUBLISHING", file=sys.stderr)
+            # push a notification to other clients logged on this account
+            cache.publish(username, "You have posted a new publication from different place")
 
             msg = "New publication has been created successfully."
             return render_template("callback.html", msg=msg, username=username)
@@ -450,6 +457,9 @@ def share_pub_with_everyone(pid):
             return render_template("error_callback.html", msg=msg, username=username), 404
 
         cache.hset(LIST_OF_PUBLIC_PUBS_KEY_TO_REDIS, pid, username)
+
+        # push notification to everyone
+        cache.publish(PUBLIC_PUB_NOTIFICATION_KEY_TO_PUBSUB, username + "has posted a new publication!")
 
         msg = "Publication has been shared with everyone"
         return render_template("callback.html", msg=msg, username=username)
@@ -531,6 +541,9 @@ def share_pub_with_user(pid):
         # Share it to user
         shared_with_user_list.append(pid)
         cache.hset(USER_CAN_VIEW_PUBS_KEY_TO_REDIS, target_username, json.dumps(shared_with_user_list))
+
+        # Send notification
+        cache.publish(target_username, username + " has shared a new publication with you.")
 
         msg = "Publication has been shared with " + target_username
         return render_template("callback.html", msg=msg, username=username)
