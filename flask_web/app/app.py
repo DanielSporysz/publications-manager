@@ -459,7 +459,7 @@ def share_pub_with_everyone(pid):
         cache.hset(LIST_OF_PUBLIC_PUBS_KEY_TO_REDIS, pid, username)
 
         # push notification to everyone
-        cache.publish(PUBLIC_PUB_NOTIFICATION_KEY_TO_PUBSUB, username + "has posted a new publication!")
+        cache.publish(PUBLIC_PUB_NOTIFICATION_KEY_TO_PUBSUB, username + " has posted a new publication!")
 
         msg = "Publication has been shared with everyone"
         return render_template("callback.html", msg=msg, username=username)
@@ -551,7 +551,7 @@ def share_pub_with_user(pid):
         return my_redirect("/login")
 
 @app.route('/unshare-with-user/publication/<pid>', methods=["POST"])
-def unshare_pub_with_user(pid):
+def check_unshare_pub_with_user(pid):
     session_id = request.cookies.get('session_id')
     username = sessions_manager.get_session_user(session_id)
 
@@ -573,39 +573,36 @@ def unshare_pub_with_user(pid):
             msg = 'You cannot share a publication with yourself'
             return render_template("error_callback.html", msg=msg, username=username), 400
 
-        shared_with_user_list = cache.hget(USER_CAN_VIEW_PUBS_KEY_TO_REDIS, target_username)
-        if shared_with_user_list is None:
-            shared_with_user_list = []
-        else:
-            shared_with_user_list = json.loads(shared_with_user_list.decode())
-
-        if pid not in shared_with_user_list:
-            # lie to user. He doesn't have to know
-            msg = 'Publication has been unshared ' + target_username
-            return render_template("callback.html", msg=msg, username=username)
-
-        # Unshare it to user
-        shared_with_user_list.remove(pid)
-        cache.hset(USER_CAN_VIEW_PUBS_KEY_TO_REDIS, target_username, json.dumps(shared_with_user_list))
-
-        # Forget with who users shares publication
-        shares = cache.hget(USER_SHARES_KEY_TO_REDIS, username)
-        if shares:
-            shares = json.loads(shares.decode())
-            list_of_shares = shares.get(pid)
-            if list_of_shares:
-                list_of_shares.remove(target_username)
-                shares[pid] = list_of_shares
-                cache.hset(USER_SHARES_KEY_TO_REDIS, username, json.dumps(shares))
-
-        # Don't for get ownership
-        # cache.hdel(PUBLICATION_OWNERSHIP_KEY_TO_REDIS, pid)
+        unshare_pub_with_user(pid=pid, owner=username, target_username=target_username)
 
         msg = "Publication has been unshared with " + target_username
         return render_template("callback.html", msg=msg, username=username)
     else:
         return my_redirect("/login")
 
+def unshare_pub_with_user(pid, username, target_username):
+    shared_with_user_list = cache.hget(USER_CAN_VIEW_PUBS_KEY_TO_REDIS, target_username)
+    if shared_with_user_list is None:
+        shared_with_user_list = []
+    else:
+        shared_with_user_list = json.loads(shared_with_user_list.decode())
+
+    if pid not in shared_with_user_list:
+        return
+
+    # Unshare it to user
+    shared_with_user_list.remove(pid)
+    cache.hset(USER_CAN_VIEW_PUBS_KEY_TO_REDIS, target_username, json.dumps(shared_with_user_list))
+
+    # Forget with who users shares publication
+    shares = cache.hget(USER_SHARES_KEY_TO_REDIS, username)
+    if shares:
+        shares = json.loads(shares.decode())
+        list_of_shares = shares.get(pid)
+        if list_of_shares:
+            list_of_shares.remove(target_username)
+            shares[pid] = list_of_shares
+            cache.hset(USER_SHARES_KEY_TO_REDIS, username, json.dumps(shares))
 
 @app.route('/edit/publication/<pid>', methods=["GET"])
 def publication_editor(pid):
@@ -682,23 +679,37 @@ def publication_creator():
 
 @app.route('/delete/publication/<pid>', methods=['POST'])
 def delete_publication(pid):
-    if len(pid) == 0:
-        return '<h1>PDF</h1> Missing publication id', 404
-
     session_id = request.cookies.get('session_id')
     username = sessions_manager.get_session_user(session_id)
 
     if sessions_manager.validate_session(session_id) and username is not None:
-        try:
-            if pid.encode() not in cache.hkeys(username):
-                return '<h1>WEB</h1> There is no such publication on your list: ' + pid, 404
+        username = username.decode()
 
-            cache.hdel(PUBLIC_PUB_IDS_KEY_TO_REDIS, pid)
-            cache.hdel(username, pid)
-            msg = "Publication " + pid + " has been deleted successfully."
-        except:
-            msg = "An error occured while deleting a publication!"
-        return render_template("callback.html", msg=msg, username=username.decode())
+        if len(pid) == 0:
+            msg = "Missing publication id"
+            return render_template("error_callback.html", msg=msg, username=username), 404
+
+        # try:
+        if pid.encode() not in cache.hkeys(username):
+            msg = "There is no such publication on your list"
+            return render_template("error_callback.html", msg=msg, username=username), 404
+
+        shares = cache.hget(USER_SHARES_KEY_TO_REDIS, username)
+        if shares:
+            shares = json.loads(shares.decode())
+            list_of_shares = shares.get(pid)
+            print("OTO LISTA SHAROW", file=sys.stderr)
+            print(list_of_shares, file=sys.stderr)
+            for target in list_of_shares:
+                unshare_pub_with_user(pid, username, target)
+
+        cache.hdel(LIST_OF_PUBLIC_PUBS_KEY_TO_REDIS, pid)
+        cache.hdel(username, pid)
+        msg = "Publication " + pid + " has been deleted successfully."
+        # except:
+        #     msg = "An error occured while deleting a publication!"
+        #     return render_template("error_callback.html", msg=msg, username=username)
+        return render_template("callback.html", msg=msg, username=username)
     else:
         return my_redirect("/login")
 
