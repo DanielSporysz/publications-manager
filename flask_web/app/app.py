@@ -87,7 +87,7 @@ def stream():
         return "<h1>WEB</h1> You are not logged in", 403
 
 
-@app.route('/')
+@app.route('/', methods=['GET'])
 def index():
     session_id = request.cookies.get('session_id')
     if session_id is not None and sessions_manager.validate_session(session_id):
@@ -96,17 +96,37 @@ def index():
         return my_redirect("/login")
 
 
-@app.route('/login')
+@app.route('/login', methods=['GET'])
 def login():
     return render_template("login.html")
 
-@app.route('/sign-up-page')
+@app.route('/sign-up-page', methods=['GET'])
 def sign_up_page():
     return render_template("signup.html")
 
-@app.route('/sign-up')
+@app.route('/sign-up', methods=['POST'])
 def sign_up_user():
-    return "Yooo!!", 200
+    username = request.form.get('username')
+    password = request.form.get('password')
+    re_password = request.form.get('rePassword')
+
+    if not username or not password or not re_password:
+        return "<h1>Publications Manager</h1> The form is missing some fields", 401
+
+    if password != re_password:
+        return "<h1>Publications Manager</h1> The passwords are not matching", 401
+
+    return "yooy " + username + " " + password, 200
+
+@app.route('/user/<uid>', methods=['GET'])
+def check_if_users_exists(uid):
+    if len(uid) == 0:
+        return "<h1>Publications Manager</h1> Missing username", 404
+
+    if usrs_manager.is_username_available(uid):
+        return "<h1>Publications Manager</h1> Name " + uid + " is already taken", 200 
+    else:
+        return "<h1>Publications Manager</h1> Name " + uid + " is free", 404
 
 @app.route('/auth', methods=['POST'])
 def auth():
@@ -150,7 +170,7 @@ def greet_auth0():
     return response
 
 
-@app.route('/welcome')
+@app.route('/welcome', methods=['GET'])
 def welcome():
     session_id = request.cookies.get('session_id')
     username = sessions_manager.get_session_user(session_id)

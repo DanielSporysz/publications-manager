@@ -39,6 +39,17 @@ class UsersManager:
         else:
             return False
 
+    def is_username_available(self, username):
+        if not username:
+            return False
+
+        # if password is set then such user exists
+        known_key = self.cache.hget(self.users_key_to_redis, username)
+        if known_key is not None:
+            return True
+        else:
+            return False
+
     def register_user(self, username, password, password_change=False):
         if username is None and password is None:
             raise Exception("Recived Nonetype object")
