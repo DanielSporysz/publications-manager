@@ -10,15 +10,19 @@ For development purposes, user database is initialised with 2 users on start up:
 - daniel, mistrz
 
 # Interesting features:
+- file uploading/downloading,
 - sharing publications with everyone or with specific users,
-- notification system on new publication publishing,
+- notification system when users share their publications,
 - integration with Auth0 authentication service.
 
 # Security features
 - secure https connection (via self signed certificates),
 - strict access control thru the validation of user's login&password, sessions and JWT tokens,
 - passwords hashed multiple times (10 times),
-- brute force attack protection.
+- brute force attack protection,
+- password strength warning on sign up page,
+- accounts lock when too many failed login attempts is made,
+
 
 # Credits
 This project is heavily inspired on the repository at https://github.com/bchaber/di1541 of user https://github.com/bchaber.
@@ -41,9 +45,5 @@ PATH=%PATH%;"C:\Program Files\Java\jdk1.8.0_231\bin"
 keytool -importcert -alias webcompanycom -keystore "C:\Program Files\Java\jdk1.8.0_231\jre\lib\security\cacerts" -storepass changeit -file SSL\web.crt
 
 # Planned features:
-- registration system,
 - protection from XSRF attacks,
-- blocking accounts when certain number of failed login attempts  has been made,
-- system warning users about failed login attempts,
-- checking the strength of user password on registration,
-- adding a delay to login responses to delay brute force attacks.
+- warning system on many failed login attempts/connection from new IP.
