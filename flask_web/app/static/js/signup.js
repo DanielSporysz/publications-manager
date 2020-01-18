@@ -141,14 +141,28 @@ function checkUsernameAvailability() {
     xmlHttp.send(null);
 }
 
+function get_entropy(value){
+    const characters = {};
+    value.split('').forEach(
+      c => (characters[c] ? characters[c]++ : (characters[c] = 1))
+    );
+
+    return Object.keys(characters).reduce((acc, c) => {
+        const p = characters[c] / value.length;
+        return acc - (p * (Math.log(p) / Math.log(2)));
+      }, 0);
+}
+
 function checkPassword(){
     value = password.value;
     if(value.length === 0) {
         return;
-    } else if(value.length < 8){
-        insertErrorMessage("Password should be at least 8 characters long.", "passwordDiv")
+    } else if(value.length < 6){
+        insertErrorMessage("Password should be at least 6 characters long.", "passwordDiv")
     } else if(value.length > 50){
-        insertErrorMessage("Password too long! Stay between 8-50 characters.", "passwordDiv")
+        insertErrorMessage("Password too long! Stay between 6-50 characters.", "passwordDiv")
+    } else if(get_entropy(value) < 2.5) {
+        insertErrorMessage("Password is too weak!", "passwordDiv")
     }
 
     checkRePassword();

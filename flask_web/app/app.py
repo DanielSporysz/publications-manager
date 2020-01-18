@@ -123,8 +123,8 @@ def sign_up_user():
         msg="The passwords are not matching. Sign up form declined."
         return render_template('publicCallback.html', divClass='div callback error', msg=msg), 401
 
-    if len(password) < 8 or len(password) > 50:
-        msg="The password should be between 8-50 characters. Sign up form declined."
+    if len(password) < 6 or len(password) > 50:
+        msg="The password should be between 6-50 characters. Sign up form declined."
         return render_template('publicCallback.html', divClass='div callback error', msg=msg), 401
 
     if usrs_manager.is_username_available(username):
