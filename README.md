@@ -9,21 +9,6 @@ For development purposes, user database is initialised with 2 users on start up:
 - admin, admin
 - daniel, mistrz
 
-# Interesting features:
-- file uploading/downloading,
-- sharing publications with everyone or with specific users,
-- notification system when users share their publications,
-- integration with Auth0 authentication service.
-
-# Security features
-- secure https connection (via self signed certificates),
-- strict access control thru the validation of user's login&password, sessions and JWT tokens,
-- passwords hashed multiple times (10 times),
-- brute force attack protection,
-- password strength warning on sign up page,
-- accounts lock when too many failed login attempts is made,
-
-
 # Credits
 This project is heavily inspired on the repository at https://github.com/bchaber/di1541 of user https://github.com/bchaber.
 
