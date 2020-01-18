@@ -9,7 +9,7 @@ HASH_COUNT = 10
 SALT_LENGTH = 32
 
 MAX_FAILED_LOGIN_ATTEMPTS = 5
-ACCOUNT_LOCK_TIME = 5
+ACCOUNT_LOCK_TIME = 3 # in minutes
 DT_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 
 class UsersManager:
@@ -44,7 +44,7 @@ class UsersManager:
             last_attempt = history[-1:][0]
             last_attempt = datetime.strptime(last_attempt, DT_FORMAT)
 
-            if last_attempt - datetime.utcnow() < timedelta(minutes=ACCOUNT_LOCK_TIME):
+            if datetime.utcnow() - last_attempt < timedelta(minutes=ACCOUNT_LOCK_TIME):
                 raise Exception("account is locked now")
 
         # Hash and compare
