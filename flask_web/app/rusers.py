@@ -19,13 +19,20 @@ class UsersManager:
         self.users_salt_key_to_redis = "users_salt"
         self.users_failed_login_history = "users_failed_login_history"
 
+    # To avoid massive code refactor, this function swallows exceptions
     def validate_credentials(self, username, password):
-        if username is None and password is None:
+        try:
+            return self.validate_credentials_and_return_reason(username, password)
+        except:
             return False
+
+    def validate_credentials_and_return_reason(self, username, password):
+        if username is None and password is None:
+            raise Exception("incorrect credentials")
 
         salt_bag = self.cache.hget(self.users_salt_key_to_redis, username)
         if salt_bag is None:
-            return False
+            raise Exception("incorrect credentials")
 
         # Check the register of login attempts
         history = self.cache.hget(self.users_failed_login_history, username)
@@ -38,8 +45,7 @@ class UsersManager:
             last_attempt = datetime.strptime(last_attempt, DT_FORMAT)
 
             if last_attempt - datetime.utcnow() < timedelta(minutes=ACCOUNT_LOCK_TIME):
-                print(username + " account is locked", file=sys.stderr)
-                return False
+                raise Exception("account is locked now")
 
         # Hash and compare
         given_key = password.encode('utf-8')
@@ -73,7 +79,7 @@ class UsersManager:
             history = history[-5:] # Remember just last 5 attempts
             self.cache.hset(self.users_failed_login_history, username, json.dumps(history))
 
-            return False
+            raise Exception("incorrect credentials")
 
     def is_username_available(self, username):
         if not username:

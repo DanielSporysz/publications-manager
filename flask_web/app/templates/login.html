@@ -10,6 +10,11 @@
 
 <body>
     <h1 class="h1 maintitle">Publications Manager</h1>
+    {% if callback_message %}
+    <div class="message">
+        {{callback_message}}
+    </div>
+    {% endif %}
     <div class="div login">
         <form class="form login" action="/auth" method="POST">
             <input class="input login" type="text" name="username" placeholder="Username"></input>

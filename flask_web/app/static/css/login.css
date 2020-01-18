@@ -3,6 +3,14 @@ form.login {
     background: #dadada;
 }
 
+div.message {
+    max-width: 400px;
+    margin: 10px auto;
+    padding: 17px 20px;
+    background: #ffcf4d;
+    border-radius: 8px;
+}
+
 div.login {
     max-width: 400px;
     margin: 10px auto;
@@ -66,7 +74,7 @@ button.sign.up{
     border: 1px;
     width: 100%;
     color: #FFF;
-    background-color: #c4c4c4;
+    background-color: #909497;
     text-align: center;
     font-style: normal;
 }
