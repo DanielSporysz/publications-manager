@@ -9,12 +9,15 @@
 </head>
 
 <body>
-    <h1 class="h1 maintitle">WEB APP</h1>
+    <h1 class="h1 maintitle">Publications Manager</h1>
     <div class="div login">
         <form class="form login" action="/auth" method="POST">
             <input class="input login" type="text" name="username" placeholder="Username"></input>
             <input class="input login" type="password" name="password" placeholder="Password"></input>
             <button class="button login" type="submit">Log in</button>
+        </form>
+        <form action="/sign-up-page" method="GET" class="sign up">
+            <button class="sign up" type="submit">Sign up</button>
         </form>
         <form action="/auth0-redirect" method="GET" class="auth0">
             <button class="auth0" type="submit">Log with Auth0</button>

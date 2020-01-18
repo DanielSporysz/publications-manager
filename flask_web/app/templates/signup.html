@@ -1,0 +1,40 @@
+<!doctype html>
+
+<head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sharedstyle.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/welcome.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pubview.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/callback.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pubcreate.css') }}">
+    <script type="text/javascript"
+         src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script type="text/javascript"
+         src="{{ url_for('static', filename='js/signup.js') }}"></script>
+</head>
+
+<body>
+    <h1 class="h1 maintitle">Publications Manager</h1>
+    <div class="div welcome">
+        <fieldset class="fieldset">
+            <legend>Sign up:</legend>
+            <form action="/new/publication" method="POST">
+                <label> Username: </label>
+                <input class="pub field" type="text" name="username" placeholder="Username"></input>
+                <label> Password: </label>
+                <input class="pub field" type="password" name="username" placeholder="Password"></input>
+                <label> Confirm password: </label>
+                <input class="pub field" type="password" name="username" placeholder="Confirm password"></input>
+                <button class="create pub" type="submit">Sign up</button>
+            </form>
+        </fieldset>
+
+        <div class="div return">
+            <form class="form return" action="/login" method="GET">
+                <button class="button return" type="submit">Return to log in screen</button>
+            </form>
+        </div>
+    </div>
+</body>

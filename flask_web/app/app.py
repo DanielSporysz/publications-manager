@@ -100,6 +100,13 @@ def index():
 def login():
     return render_template("login.html")
 
+@app.route('/sign-up-page')
+def sign_up_page():
+    return render_template("signup.html")
+
+@app.route('/sign-up')
+def sign_up_user():
+    return "Yooo!!", 200
 
 @app.route('/auth', methods=['POST'])
 def auth():
