@@ -46,9 +46,9 @@ class UsersManager:
         # if password is set then such user exists
         known_key = self.cache.hget(self.users_key_to_redis, username)
         if known_key is not None:
-            return True
-        else:
             return False
+        else:
+            return True
 
     def register_user(self, username, password, password_change=False):
         if username is None and password is None:

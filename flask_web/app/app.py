@@ -20,6 +20,7 @@ from os import getenv
 import sys
 from jwt import decode, InvalidTokenError
 import http.client
+import re
 
 
 app = Flask(__name__)
@@ -111,19 +112,35 @@ def sign_up_user():
     re_password = request.form.get('rePassword')
 
     if not username or not password or not re_password:
-        return "<h1>Publications Manager</h1> The form is missing some fields", 401
+        msg="The form is missing some fields. Sign up form declined."
+        return render_template('publicCallback.html', divClass='div callback error', msg=msg), 401
+
+    if not bool(re.match(r"^[a-zA-Z0-9]+$", username)):
+        msg="Username contains special characters. Sign up form declined."
+        return render_template('publicCallback.html', divClass='div callback error', msg=msg), 401
 
     if password != re_password:
-        return "<h1>Publications Manager</h1> The passwords are not matching", 401
+        msg="The passwords are not matching. Sign up form declined."
+        return render_template('publicCallback.html', divClass='div callback error', msg=msg), 401
 
-    return "yooy " + username + " " + password, 200
+    if len(password) < 8 or len(password) > 50:
+        msg="The password should be between 8-50 characters. Sign up form declined."
+        return render_template('publicCallback.html', divClass='div callback error', msg=msg), 401
+
+    if usrs_manager.is_username_available(username):
+        usrs_manager.register_user(username, password)
+        msg = "Username '" + username + "' has been registered."
+        return render_template('publicCallback.html', divClass='div callback', msg=msg), 200
+    else:
+        msg="Username '" + username + "' is not available. Sign up form declined."
+        return render_template('publicCallback.html', divClass='div callback error', msg=msg), 401
 
 @app.route('/user/<uid>', methods=['GET'])
 def check_if_users_exists(uid):
     if len(uid) == 0:
         return "<h1>Publications Manager</h1> Missing username", 404
 
-    if usrs_manager.is_username_available(uid):
+    if not usrs_manager.is_username_available(uid):
         return "<h1>Publications Manager</h1> Name " + uid + " is already taken", 200 
     else:
         return "<h1>Publications Manager</h1> Name " + uid + " is free", 404

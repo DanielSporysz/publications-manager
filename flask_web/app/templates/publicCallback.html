@@ -9,21 +9,14 @@
 
 <body>
     <h1 class="h1 maintitle">Publications Manager</h1>
-    <div class="div callback error">
-        <div class="div user">
-            As <b>{{username}}</b>:
-            <form class="form logout" action="/logout" method="GET">
-                <button class="button logout" type="submit">Log out</button>
-            </form>
-        </div>
-
+    <div class="{{divClass}}">
         <div class="div message">
             {{msg}}
         </div>
 
         <div class="div return">
-            <form class="form return" action="/welcome" method="GET">
-                <button class="button return" type="submit">Return to homepage</button>
+            <form class="form return" action="/login" method="GET">
+                <button class="button return" type="submit">Return to log in page</button>
             </form>
         </div>
     </div>
