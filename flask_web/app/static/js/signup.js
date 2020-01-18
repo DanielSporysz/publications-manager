@@ -29,6 +29,8 @@ function addListeners(){
     username.addEventListener("input", function(event){
         clearErrorMessage('usernameDiv')
     }, false);
+    const debouncedLoginCheck = debounced(700, checkUsername);
+    username.addEventListener("input", debouncedLoginCheck);
     const debouncedLoginAvailability = debounced(1000, checkUsernameAvailability);
     username.addEventListener("input", debouncedLoginAvailability);
 
@@ -82,15 +84,16 @@ function formIsReady(){
         insertErrorMessage("Please fill in this field!", "rePasswordDiv");
         return false
     }
+
+    checkUsername();
+    checkPassword();
+    checkRePassword();
     
     //Check if they are filled correctly
     const errors = document.getElementsByClassName("error");
-    console.log("Form should send?")
     if (errors.length != 0){
-        console.log("no")
         return false;
     }
-    console.log("yes")
     return true;
 }
 
@@ -105,6 +108,37 @@ function debounced(delay, fn) {
             timerId = null;
         }, delay);
     }
+}
+
+function checkUsername(){
+    value = username.value;
+    if(value.length === 0) {
+        return;
+    } else if(!/^[a-zA-Z0-9]+$/.test(value)){
+        insertErrorMessage("Do not use any special characters.", "usernameDiv")
+    } else if(value.length < 3){
+        insertErrorMessage("Username should be at least 3 characters long.", "usernameDiv")
+    } else if(value.length > 20){
+        insertErrorMessage("Username too long! Stay between 3-20 characters.", "usernameDiv")
+    }
+}
+
+function checkUsernameAvailability() {
+    if(username.value === ""){
+        return;
+    }
+
+    let theUrl = "https://web.company.com/user/" + username.value;
+
+    let xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("GET", theUrl, true); // true for asynchronous
+    xmlHttp.onloadend = function() {
+        if(xmlHttp.status !== 404){
+            clearErrorMessage("usernameDiv");
+            insertErrorMessage("This username is already taken!", "usernameDiv");
+        }
+    };
+    xmlHttp.send(null);
 }
 
 function checkPassword(){
@@ -127,22 +161,4 @@ function checkRePassword(){
     } else if(value !== password.value){
         insertErrorMessage("Passwords do not match.", "rePasswordDiv");
     }
-}
-
-function checkUsernameAvailability() {
-    if(username.value === ""){
-        return;
-    }
-
-    let theUrl = "https://web.company.com/user/" + username.value;
-
-    let xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("GET", theUrl, true); // true for asynchronous
-    xmlHttp.onloadend = function() {
-        if(xmlHttp.status !== 404){
-            clearErrorMessage("usernameDiv");
-            insertErrorMessage("This username is already taken!", "usernameDiv");
-        }
-    };
-    xmlHttp.send(null);
 }
