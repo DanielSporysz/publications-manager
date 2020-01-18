@@ -2,15 +2,22 @@ import redis
 import os
 import hashlib
 import sys
+import json
+from datetime import datetime, timedelta
 
 HASH_COUNT = 10
 SALT_LENGTH = 32
+
+MAX_FAILED_LOGIN_ATTEMPTS = 5
+ACCOUNT_LOCK_TIME = 5
+DT_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 
 class UsersManager:
     def __init__(self, cache):
         self.cache = cache
         self.users_key_to_redis = "users"
         self.users_salt_key_to_redis = "users_salt"
+        self.users_failed_login_history = "users_failed_login_history"
 
     def validate_credentials(self, username, password):
         if username is None and password is None:
@@ -20,6 +27,21 @@ class UsersManager:
         if salt_bag is None:
             return False
 
+        # Check the register of login attempts
+        history = self.cache.hget(self.users_failed_login_history, username)
+        if history:
+            history = json.loads(history.decode())
+        else:
+            history = []
+        if len(history) >= MAX_FAILED_LOGIN_ATTEMPTS:
+            last_attempt = history[-1:][0]
+            last_attempt = datetime.strptime(last_attempt, DT_FORMAT)
+
+            if last_attempt - datetime.utcnow() < timedelta(minutes=ACCOUNT_LOCK_TIME):
+                print(username + " account is locked", file=sys.stderr)
+                return False
+
+        # Hash and compare
         given_key = password.encode('utf-8')
         hash_iteration = 0
         while hash_iteration < HASH_COUNT:
@@ -35,8 +57,22 @@ class UsersManager:
 
         known_key = self.cache.hget(self.users_key_to_redis, username)
         if known_key is not None and known_key == given_key:
+            # Clear register of failed login attempts
+            self.cache.hdel(self.users_failed_login_history, username)
+
             return True
         else:
+            # Register failed login attempt
+            history = self.cache.hget(self.users_failed_login_history, username)
+            if history:
+                history = json.loads(history.decode())
+            else:
+                history = []
+            history.append(str(datetime.utcnow()))
+
+            history = history[-5:] # Remember just last 5 attempts
+            self.cache.hset(self.users_failed_login_history, username, json.dumps(history))
+
             return False
 
     def is_username_available(self, username):
