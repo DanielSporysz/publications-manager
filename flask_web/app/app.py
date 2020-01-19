@@ -134,8 +134,6 @@ def auth():
                 response.headers["Location"] = "/welcome"
                 return response
         except Exception as e:
-            print("THERE HAS BEEN AN EXCEPTION", file=sys.stderr)
-            print(str(e), file=sys.stderr)
             response.set_cookie("callback_message", str(e),
                                 max_age=SESSION_TIME)
 
@@ -156,8 +154,8 @@ def greet_auth0():
     resp = auth0.get('userinfo')
     userinfo = resp.json()
 
-    if userinfo['email_verified'] == False:
-        return "<h1>WEB</h1> You cannot use this account to log in.", 401
+    #if userinfo['email_verified'] == False:
+    #    return "<h1>WEB</h1> You cannot use this account to log in.", 401
 
     session_id = sessions_manager.create_session(userinfo["email"])
     cache.hset(AUTH0_SESSIONS_KEY_TO_REDIS, session_id, userinfo["email"])
@@ -304,12 +302,11 @@ def logout():
     if session_id is not None:
         sessions_manager.delete_session(session_id)
 
-        # BROWSER ERROR: TOO MANY REDIRECTIONS
         # if it's auth0 session
-        # if cache.hget(AUTH0_SESSIONS_KEY_TO_REDIS, session_id):
-        #    params = {'returnTo': 'https://web.company.com',
-        #        'client_id': 'OAlnyEG2QDnHVOYVv0kPd7s4bqSNQk9E'}
-        #    return redirect(auth0.api_base_url + '/v2/logout?' + urlencode(params))
+        if cache.hget(AUTH0_SESSIONS_KEY_TO_REDIS, session_id):
+            params = {'returnTo': 'https://web.company.com',
+                'client_id': 'OAlnyEG2QDnHVOYVv0kPd7s4bqSNQk9E'}
+            return redirect(auth0.api_base_url + '/v2/logout?' + urlencode(params))
 
     response = my_redirect("/login")
     response.set_cookie("session_id", "INVALIDATE", max_age=INVALIDATE)
