@@ -26,10 +26,11 @@ import re
 app = Flask(__name__)
 
 oauth = OAuth(app)
+OAUTH_CLIENT_SECRET = getenv("OAUTH_CLIENT_SECRET")
 auth0 = oauth.register(
     'auth0',
     client_id='OAlnyEG2QDnHVOYVv0kPd7s4bqSNQk9E',
-    client_secret='B3W-_SVYKjx564Ww-_QS7Kp71dBu3c5j-ckeEvNnOgXjB5su7z1Btnq_g7jiHz9j',
+    client_secret=OAUTH_CLIENT_SECRET,
     api_base_url='https://dev-0n-bx69c.eu.auth0.com',
     access_token_url='https://dev-0n-bx69c.eu.auth0.com/oauth/token',
     authorize_url='https://dev-0n-bx69c.eu.auth0.com/authorize',
@@ -130,7 +131,7 @@ def auth():
             if usrs_manager.validate_credentials_and_return_reason(username, password):
                 session_id = sessions_manager.create_session(username)
                 response.set_cookie(
-                    "session_id", session_id, max_age=SESSION_TIME, secure=True, httponly=True, samesite='Strict')
+                    "session_id", session_id, max_age=SESSION_TIME, secure=True, httponly=True, samesite='Lax')
                 response.headers["Location"] = "/welcome"
                 return response
         except Exception as e:
@@ -161,7 +162,7 @@ def greet_auth0():
     cache.hset(AUTH0_SESSIONS_KEY_TO_REDIS, session_id, userinfo["email"])
 
     response = make_response('', 303)
-    response.set_cookie("session_id", session_id, max_age=SESSION_TIME, secure=True, httponly=True, samesite='Strict')
+    response.set_cookie("session_id", session_id, max_age=SESSION_TIME, secure=True, httponly=True, samesite='Lax')
     response.headers["Location"] = "/welcome"
 
     return response
