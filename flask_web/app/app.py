@@ -130,7 +130,7 @@ def auth():
             if usrs_manager.validate_credentials_and_return_reason(username, password):
                 session_id = sessions_manager.create_session(username)
                 response.set_cookie(
-                    "session_id", session_id, max_age=SESSION_TIME)
+                    "session_id", session_id, max_age=SESSION_TIME, secure=True, httponly=True, samesite='Strict')
                 response.headers["Location"] = "/welcome"
                 return response
         except Exception as e:
@@ -161,7 +161,7 @@ def greet_auth0():
     cache.hset(AUTH0_SESSIONS_KEY_TO_REDIS, session_id, userinfo["email"])
 
     response = make_response('', 303)
-    response.set_cookie("session_id", session_id, max_age=SESSION_TIME)
+    response.set_cookie("session_id", session_id, max_age=SESSION_TIME, secure=True, httponly=True, samesite='Strict')
     response.headers["Location"] = "/welcome"
 
     return response
