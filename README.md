@@ -30,5 +30,4 @@ PATH=%PATH%;"C:\Program Files\Java\jdk1.8.0_231\bin"
 keytool -importcert -alias webcompanycom -keystore "C:\Program Files\Java\jdk1.8.0_231\jre\lib\security\cacerts" -storepass changeit -file SSL\web.crt
 
 # Planned features:
-- protection from XSRF attacks,
 - warning system on many failed login attempts/connection from new IP.
