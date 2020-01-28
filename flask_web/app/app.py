@@ -128,7 +128,7 @@ def auth():
     if username is not None and password is not None:
         try:
             # throwns an exception on failed login or returns True
-            if usrs_manager.validate_credentials_and_return_reason(username, password):
+            if usrs_manager.validate_credentials_and_return_reason(username, password, request.remote_addr):
                 session_id = sessions_manager.create_session(username)
                 response.set_cookie(
                     "session_id", session_id, max_age=SESSION_TIME, secure=True, httponly=True, samesite='Lax')
@@ -355,7 +355,7 @@ def update_password():
         if new_password != re_new_password:
             msg = "Fields with new password don't match"
             return render_template("error_callback.html", username=username, msg=msg), 400
-        if not usrs_manager.validate_credentials(username, password):
+        if not usrs_manager.validate_credentials(username, password, request.remote_addr):
             msg = "Wrong password"
             return render_template("error_callback.html", username=username, msg=msg), 401
 
@@ -1014,7 +1014,7 @@ def get_auth_token():
     given_password = request.headers.get(
         'password') or request.args.get('password')
 
-    if usrs_manager.validate_credentials(login, given_password):
+    if usrs_manager.validate_credentials(login, given_password, request.remote_addr):
         token = tokens_manager.create_auth_token(login)
         responseObject = {
             'auth_token': token.decode()

@@ -17,25 +17,18 @@ class UsersManager:
         self.cache = cache
         self.users_key_to_redis = "users"
         self.users_salt_key_to_redis = "users_salt"
-        self.users_failed_login_history = "users_failed_login_history"
+        self.ip_failed_login_history = "ip_failed_login_history"
 
     # To avoid massive code refactor, this function swallows exceptions
-    def validate_credentials(self, username, password):
+    def validate_credentials(self, username, password, remote_addr):
         try:
-            return self.validate_credentials_and_return_reason(username, password)
+            return self.validate_credentials_and_return_reason(username, password, remote_addr)
         except:
             return False
 
-    def validate_credentials_and_return_reason(self, username, password):
-        if username is None and password is None:
-            raise Exception("incorrect credentials")
-
-        salt_bag = self.cache.hget(self.users_salt_key_to_redis, username)
-        if salt_bag is None:
-            raise Exception("incorrect credentials")
-
+    def validate_credentials_and_return_reason(self, username, password, remote_addr):
         # Check the register of login attempts
-        history = self.cache.hget(self.users_failed_login_history, username)
+        history = self.cache.hget(self.ip_failed_login_history, remote_addr)
         if history:
             history = json.loads(history.decode())
         else:
@@ -45,7 +38,15 @@ class UsersManager:
             last_attempt = datetime.strptime(last_attempt, DT_FORMAT)
 
             if datetime.utcnow() - last_attempt < timedelta(minutes=ACCOUNT_LOCK_TIME):
-                raise Exception("account is locked now")
+                raise Exception("your IP has been locked")
+
+        if username is None and password is None:
+            raise Exception("incorrect credentials")
+
+        salt_bag = self.cache.hget(self.users_salt_key_to_redis, username)
+        if salt_bag is None:
+            raise Exception("incorrect credentials")
+
 
         # Hash and compare
         given_key = password.encode('utf-8')
@@ -64,12 +65,12 @@ class UsersManager:
         known_key = self.cache.hget(self.users_key_to_redis, username)
         if known_key is not None and known_key == given_key:
             # Clear register of failed login attempts
-            self.cache.hdel(self.users_failed_login_history, username)
+            self.cache.hdel(self.ip_failed_login_history, remote_addr)
 
             return True
         else:
             # Register failed login attempt
-            history = self.cache.hget(self.users_failed_login_history, username)
+            history = self.cache.hget(self.ip_failed_login_history, remote_addr)
             if history:
                 history = json.loads(history.decode())
             else:
@@ -77,7 +78,7 @@ class UsersManager:
             history.append(str(datetime.utcnow()))
 
             history = history[-5:] # Remember just last 5 attempts
-            self.cache.hset(self.users_failed_login_history, username, json.dumps(history))
+            self.cache.hset(self.ip_failed_login_history, remote_addr, json.dumps(history))
 
             raise Exception("incorrect credentials")
 
