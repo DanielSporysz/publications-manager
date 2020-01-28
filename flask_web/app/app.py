@@ -22,23 +22,7 @@ from jwt import decode, InvalidTokenError
 import http.client
 import re
 
-
 app = Flask(__name__)
-
-oauth = OAuth(app)
-OAUTH_CLIENT_SECRET = getenv("OAUTH_CLIENT_SECRET")
-auth0 = oauth.register(
-    'auth0',
-    client_id='OAlnyEG2QDnHVOYVv0kPd7s4bqSNQk9E',
-    client_secret=OAUTH_CLIENT_SECRET,
-    api_base_url='https://dev-0n-bx69c.eu.auth0.com',
-    access_token_url='https://dev-0n-bx69c.eu.auth0.com/oauth/token',
-    authorize_url='https://dev-0n-bx69c.eu.auth0.com/authorize',
-    client_kwargs={
-        'scope': 'openid profile email',
-    }
-)
-AUTH0_SESSIONS_KEY_TO_REDIS = "auth0_sessions"
 
 # pid as key, username as value
 LIST_OF_PUBLIC_PUBS_KEY_TO_REDIS = "LIST_OF_PUBLIC_PUBS_KEY_TO_REDIS"
@@ -142,31 +126,6 @@ def auth():
     response.headers["Location"] = "/login"
 
     return response
-
-
-@app.route('/auth0-redirect')
-def redirect_to_auth0():
-    return auth0.authorize_redirect(redirect_uri='https://web.company.com/auth0-callback')
-
-
-@app.route('/auth0-callback')
-def greet_auth0():
-    auth0.authorize_access_token()
-    resp = auth0.get('userinfo')
-    userinfo = resp.json()
-
-    #if userinfo['email_verified'] == False:
-    #    return "<h1>WEB</h1> You cannot use this account to log in.", 401
-
-    session_id = sessions_manager.create_session(userinfo["email"])
-    cache.hset(AUTH0_SESSIONS_KEY_TO_REDIS, session_id, userinfo["email"])
-
-    response = make_response('', 303)
-    response.set_cookie("session_id", session_id, max_age=SESSION_TIME, secure=True, httponly=True, samesite='Lax')
-    response.headers["Location"] = "/welcome"
-
-    return response
-
 
 @app.route('/sign-up-page', methods=['GET'])
 def sign_up_page():
@@ -303,12 +262,6 @@ def logout():
     if session_id is not None:
         sessions_manager.delete_session(session_id)
 
-        # if it's auth0 session
-        if cache.hget(AUTH0_SESSIONS_KEY_TO_REDIS, session_id):
-            params = {'returnTo': 'https://web.company.com',
-                'client_id': 'OAlnyEG2QDnHVOYVv0kPd7s4bqSNQk9E'}
-            return redirect(auth0.api_base_url + '/v2/logout?' + urlencode(params))
-
     response = my_redirect("/login")
     response.set_cookie("session_id", "INVALIDATE", max_age=INVALIDATE)
     return response
@@ -321,11 +274,6 @@ def account_management():
 
     if sessions_manager.validate_session(session_id) and username is not None:
         username = username.decode()
-
-        # Check if it's auth0 session
-        if cache.hget(AUTH0_SESSIONS_KEY_TO_REDIS, session_id):
-            msg = "You cannot manage your auth0 account here"
-            return render_template("error_callback.html", username=username, msg=msg), 400
 
         return render_template("account.html", PDF=PDF, WEB=WEB, username=username)
     else:
@@ -340,11 +288,6 @@ def update_password():
     password = request.form.get('password')
     new_password = request.form.get('newPassword')
     re_new_password = request.form.get('reNewPassword')
-
-    # Check if it's auth0 session
-    if cache.hget(AUTH0_SESSIONS_KEY_TO_REDIS, session_id):
-        msg = "You cannot manage your auth0 account here"
-        return render_template("error_callback.html", username=username, msg=msg), 400
 
     if sessions_manager.validate_session(session_id) and username is not None:
         username = username.decode()
