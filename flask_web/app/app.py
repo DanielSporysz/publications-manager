@@ -110,17 +110,15 @@ def auth():
 
     response = make_response('', 303)
     if username is not None and password is not None:
-        try:
-            # throwns an exception on failed login or returns True
-            if usrs_manager.validate_credentials_and_return_reason(username, password, request.remote_addr):
-                session_id = sessions_manager.create_session(username)
-                response.set_cookie(
-                    "session_id", session_id, max_age=SESSION_TIME, secure=True, httponly=True, samesite='Lax')
-                response.headers["Location"] = "/welcome"
-                return response
-        except Exception as e:
-            response.set_cookie("callback_message", str(e),
-                                max_age=SESSION_TIME)
+        (isCorrect, message) = usrs_manager.validate_credentials_and_return_reason(username, password, request.remote_addr)
+        if isCorrect:
+            session_id = sessions_manager.create_session(username)
+            response.set_cookie(
+                "session_id", session_id, max_age=SESSION_TIME, secure=True, httponly=True, samesite='Lax')
+            response.headers["Location"] = "/welcome"
+            return response
+        else:
+            response.set_cookie("callback_message", message, max_age=SESSION_TIME)
 
     response.set_cookie("session_id", "INVALIDATE", max_age=INVALIDATE)
     response.headers["Location"] = "/login"
