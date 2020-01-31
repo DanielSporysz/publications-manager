@@ -13,7 +13,7 @@ Auth0 credentials:
 [login, password]
 - auth_user@domain.com, Password!2
 
-# Interesting features:
+# Interesting features
 - file uploading/downloading,
 - sharing publications (files including) with everyone or with specific users,
 - notification system when users share their publications,
@@ -37,7 +37,7 @@ The service listens on port 443 and is set to use the following domain names:
 - web.company.com,
 - pdf.company.com.
 
-# Java client requirements:
+# Java client requirements
 - written in Java 8 with JavaFX library,
 - Add web.crt and pdf.crt certificates to java trusted CNs store (or disable trusted CA checking in JVM).
  
@@ -49,5 +49,5 @@ PATH=%PATH%;"C:\Program Files\Java\jdk1.8.0_231\bin"
 2. (use keytool from *\Java\jdk1.8.0_231\bin) 
 keytool -importcert -alias webcompanycom -keystore "C:\Program Files\Java\jdk1.8.0_231\jre\lib\security\cacerts" -storepass changeit -file SSL\web.crt
 
-# Planned features:
-- warning system on many failed login attempts/connection from new IP.
+# Planned features
+- warning system on many failed login attempts and recent connections from new IP.
